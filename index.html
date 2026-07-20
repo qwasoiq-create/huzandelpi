@@ -205,6 +205,33 @@ textarea.finput:focus{border-color:var(--accent)}
 .historysheet{max-height:83%}.section-title{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;padding:7px 10px}
 @media(min-width:600px){.promptgrid{max-width:520px;margin-left:auto;margin-right:auto}.hero{padding-top:48px}}
 
+
+/* ── dark-only workspace v3 ── */
+:root,html[data-theme="dark"],html[data-theme="light"]{
+ --bg:#09090b;--panel:#151517;--panel2:#202024;--text:#f5f5f7;--muted:#93939e;
+ --border:rgba(255,255,255,.09);--accent:#806cff;--accent2:#5879ff;
+ --grad:linear-gradient(135deg,#8b6cff 0%,#5879ff 100%);--shadow:0 14px 40px rgba(0,0,0,.42)
+}
+body{background:#09090b}.top{background:rgba(9,9,11,.88);border-bottom:1px solid rgba(255,255,255,.045)}
+.page{scrollbar-color:#35353b transparent}.nav{background:rgba(16,16,19,.92);border-top-color:rgba(255,255,255,.07)}
+.hero{padding-top:42px}.hero .bigorb{box-shadow:0 14px 42px rgba(111,86,255,.34)}
+.hero h1{font-size:27px}.hero p{color:#92929d}.capabilities{opacity:.82}
+.promptgrid{grid-template-columns:1fr;max-width:420px;margin:26px auto 0;gap:7px}
+.promptcard{min-height:0;padding:11px 13px;display:grid;grid-template-columns:34px 1fr;column-gap:10px;align-items:center;background:#121214;border-color:rgba(255,255,255,.075);box-shadow:none}
+.promptcard .pi{grid-row:1/3;margin:0;width:34px;height:34px}.promptcard b{font-size:13px}.promptcard small{font-size:10.5px}.promptcard:hover{background:#18181c}
+.composer{background:linear-gradient(to top,#09090b 78%,transparent);padding-bottom:11px}.combox{background:#1d1d20;border-color:rgba(255,255,255,.11);box-shadow:0 16px 48px rgba(0,0,0,.48);border-radius:25px}
+.combox:focus-within{border-color:rgba(128,108,255,.55);box-shadow:0 16px 50px rgba(0,0,0,.5),0 0 0 1px rgba(128,108,255,.16)}
+.iconbtn{background:transparent;border:0;color:#b1b1bb}.iconbtn:hover{background:#29292e;color:#fff}.modelbtn{color:#b3b3bd}.sendbtn{box-shadow:0 7px 19px rgba(105,86,255,.38)}
+.card{background:#141416;border-color:rgba(255,255,255,.075);box-shadow:none}.seg{background:#111113}.seg button.on{background:#252529;box-shadow:none}
+textarea.finput,input.finput,.opt,.stat{background:#202024}.planbtn.ghost{background:#222226}.sheet{background:#161619;border:1px solid rgba(255,255,255,.08);border-bottom:0}.overlay{background:rgba(0,0,0,.68)}
+.demobanner{background:#231d12;border-color:#57441d}.msg.user{background:#292932;box-shadow:none}.msg.bot{color:#eeeeF2}
+.attachpreview{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 7px}.filechip{max-width:190px;height:46px;padding:6px 29px 6px 7px;border-radius:12px;background:#29292e;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;position:relative}
+.filechip .fthumb{width:33px;height:33px;border-radius:9px;object-fit:cover;flex:0 0 auto}.filechip .ficon{width:33px;height:33px;border-radius:9px;background:rgba(128,108,255,.14);color:#9d8dff;display:flex;align-items:center;justify-content:center;flex:0 0 auto}.filechip .ficon svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8}
+.filechip .finfo{min-width:0}.filechip .fname{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.filechip .fsize{font-size:9.5px;color:var(--muted)}.filechip .fx{position:absolute;right:6px;top:6px;width:18px;height:18px;border-radius:50%;border:0;background:#3c3c43;color:#ddd;font-size:10px;cursor:pointer}
+.attach-option{display:flex;gap:12px;align-items:center;padding:12px;border-radius:15px;cursor:pointer}.attach-option:active{background:#232327}.attach-option .aicon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center}.attach-option .aicon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}.attach-option b{font-size:14px;display:block}.attach-option small{font-size:11px;color:var(--muted)}
+.file-note{font-size:10.5px;color:var(--muted);padding:8px 12px 2px;line-height:1.45}
+@media(max-height:720px){.hero{padding-top:18px}.hero .bigorb{width:48px;height:48px;margin-bottom:11px}.capabilities{display:none}.promptgrid{margin-top:17px}}
+
 </style>
 </head>
 <body>
@@ -327,10 +354,11 @@ textarea.finput:focus{border-color:var(--accent)}
       <div class="comrow">
         <button class="modelbtn" id="modelBtn" onclick="openSheet('modelSheet')"><span class="dot"></span><span id="modelBtnName">Модель</span></button>
         <div class="spacer"></div>
-        <button class="iconbtn" id="attachBtn" title="Прикрепить фото" onclick="document.getElementById('fileInput').click()" style="display:none">
-          <svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.2-9.19a4 4 0 015.65 5.66l-9.2 9.19a2 2 0 01-2.82-2.83l8.49-8.48"/></svg>
+        <button class="iconbtn" id="attachBtn" title="Добавить фото или документ" onclick="openSheet('attachSheet')">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFile(this)">
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="onFiles(this,'image')">
+        <input type="file" id="documentInput" multiple style="display:none" onchange="onFiles(this,'document')">
         <button class="sendbtn" id="sendBtn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
     </div>
@@ -346,6 +374,15 @@ textarea.finput:focus{border-color:var(--accent)}
 
   <!-- sheets -->
   <div class="overlay" id="overlay" onclick="closeSheets()"></div>
+  <div class="sheet" id="attachSheet">
+    <div class="grip"></div>
+    <div class="shead">Добавить к сообщению</div>
+    <div class="sbody">
+      <div class="attach-option" onclick="chooseFiles('image')"><span class="aicon" style="background:rgba(48,151,255,.13);color:#55aaff"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 15l-5-5L5 20"/></svg></span><span><b>Фото и изображения</b><small>JPG, PNG, WEBP и другие</small></span></div>
+      <div class="attach-option" onclick="chooseFiles('document')"><span class="aicon" style="background:rgba(135,105,255,.14);color:#9f8aff"><svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5M9 12h6M9 16h6"/></svg></span><span><b>Документы и файлы</b><small>PDF, DOCX, XLSX, PPTX, TXT, код и другое</small></span></div>
+      <div class="file-note">До 4 вложений за сообщение. Из документов извлекается текст; архивы, видео и исполняемые файлы нельзя содержательно проанализировать как документ.</div>
+    </div>
+  </div>
   <div class="sheet historysheet" id="historySheet">
     <div class="grip"></div>
     <div class="shead"><span>История чатов</span><button class="headnew" onclick="newChat();closeSheets()">＋ Новый чат</button></div>
@@ -372,7 +409,7 @@ const BOT_LINK = 'https://t.me/huza_ai_bot';
 
 const S = {
   demo: false, limits: null, model: localStorage.getItem('huza_model') || '',
-  history: [], busy: false, attach: null,
+  history: [], busy: false, attach: null, attachments: [],
   chats: [], currentChatId: null,
   img: { model: '', ratio: '1:1' },
   video: { model: '', ratio: '16:9', dur: 8 },
@@ -394,7 +431,9 @@ const ERR = {
   queue_full: 'Сервер перегружен — попробуйте через минуту',
   service_disabled: 'Сервис временно отключён администратором',
   no_credits: 'Не хватает ✵ хузапоинтов — пополните баланс в боте',
-  no_vision_model: 'Нет доступной модели для фото',
+  no_vision_model: 'Нет доступной модели для анализа фото',
+  unsupported_file: 'Этот формат нельзя прочитать. Попробуйте PDF, DOCX, XLSX, PPTX, TXT или файл с кодом',
+  document_too_large: 'Документ слишком большой',
 };
 function errText(code, status){
   if (ERR[code]) return ERR[code];
@@ -412,9 +451,8 @@ function haptic(kind){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.notific
 
 /* ── theme ── */
 function applyTheme(){
-  const dark = tg ? tg.colorScheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  try{ tg && tg.setHeaderColor(dark ? '#101014' : '#f6f6f8'); tg && tg.setBackgroundColor(dark ? '#101014' : '#f6f6f8'); }catch(e){}
+  document.documentElement.setAttribute('data-theme','dark');
+  try{ tg && tg.setHeaderColor('#09090b'); tg && tg.setBackgroundColor('#09090b'); }catch(e){}
 }
 
 /* ── navigation ── */
@@ -514,7 +552,7 @@ function renderAll(){
   $('heroTitle').textContent = nm ? ('Привет, ' + nm + '!') : 'Привет!';
   // model button
   const m = curModel();
-  if (m){ S.model = m.key; $('modelBtnName').textContent = m.label; $('attachBtn').style.display = m.vision ? '' : 'none'; }
+  if (m){ S.model = m.key; $('modelBtnName').textContent = m.label; $('attachBtn').style.display = ''; }
   renderModelSheet(); renderStudio(); renderPlans(); renderProfile();
 }
 
@@ -543,7 +581,7 @@ function pickModel(key){
   if (!m) return;
   S.model = key; localStorage.setItem('huza_model', key);
   $('modelBtnName').textContent = m.label;
-  $('attachBtn').style.display = m.vision ? '' : 'none';
+  $('attachBtn').style.display = '';
   renderModelSheet(); closeSheets(); haptic('success');
   if (m.premium && !L.has_sub && !L.is_admin){
     const used = L.pro_used || 0, mx = L.pro_max != null ? L.pro_max : (L.free_daily_paid || 1);
@@ -666,34 +704,59 @@ function addMsg(role, html, label, persist, rawText){
   return d;
 }
 function suggest(t){ $('input').value = t; sendChat(); }
-function onFile(inp){
-  const f = inp.files && inp.files[0]; inp.value = '';
-  if (!f) return;
-  if (f.size > 6 * 1024 * 1024){ toast('Фото слишком большое (до 6 МБ)'); return; }
-  const r = new FileReader();
-  r.onload = () => {
-    S.attach = String(r.result).split(',')[1];
-    $('attachPreview').style.display = '';
-    $('attachPreview').innerHTML = '<div class="ap"><img src="' + r.result + '"><div class="x" onclick="clearAttach()">✕</div></div>';
-  };
-  r.readAsDataURL(f);
+function chooseFiles(kind){
+  closeSheets();
+  const el = kind === 'image' ? $('photoInput') : $('documentInput');
+  setTimeout(()=>el.click(),120);
 }
-function clearAttach(){ S.attach = null; $('attachPreview').style.display = 'none'; $('attachPreview').innerHTML = ''; }
+function humanSize(n){ return n < 1024*1024 ? Math.max(1,Math.round(n/1024))+' КБ' : (n/1024/1024).toFixed(1)+' МБ'; }
+function onFiles(inp, forcedKind){
+  const files = Array.from(inp.files || []); inp.value = '';
+  if (!files.length) return;
+  const room = 4 - S.attachments.length;
+  if (room <= 0){ toast('Можно прикрепить до 4 файлов'); return; }
+  files.slice(0,room).forEach(file => {
+    const kind = forcedKind === 'image' && file.type.startsWith('image/') ? 'image' : 'document';
+    const max = kind === 'image' ? 6*1024*1024 : 8*1024*1024;
+    if (file.size > max){ toast(file.name + ': максимум ' + (max/1024/1024) + ' МБ'); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const dataUrl = String(r.result || ''), b64 = dataUrl.split(',')[1] || '';
+      S.attachments.push({ id:'f'+Date.now()+Math.random(), kind, name:file.name, mime:file.type||'application/octet-stream', size:file.size, b64, preview:kind==='image'?dataUrl:'' });
+      renderAttachments();
+    };
+    r.readAsDataURL(file);
+  });
+}
+function renderAttachments(){
+  const box = $('attachPreview');
+  if (!S.attachments.length){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='flex';
+  box.innerHTML = S.attachments.map((f,i) => '<div class="filechip">' +
+    (f.kind==='image' ? '<img class="fthumb" src="'+f.preview+'">' : '<span class="ficon"><svg viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5M9 12h6M9 16h6"/></svg></span>') +
+    '<span class="finfo"><span class="fname">'+esc(f.name)+'</span><span class="fsize">'+humanSize(f.size)+'</span></span><button class="fx" onclick="removeAttachment('+i+')">✕</button></div>').join('');
+}
+function removeAttachment(i){ S.attachments.splice(i,1); renderAttachments(); }
+function clearAttach(){ S.attach=null; S.attachments=[]; renderAttachments(); }
 
 async function sendChat(){
   if (S.busy) return;
   const inp = $('input'), text = inp.value.trim();
-  if (!text && !S.attach) return;
+  if (!text && !S.attachments.length) return;
   if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
   const m = curModel(); if (!m){ toast('Нет доступных моделей'); return; }
   S.busy = true; $('sendBtn').disabled = true;
-  const img = S.attach;
-  addMsg('user', md(text) + (img ? '<img src="data:image/jpeg;base64,' + img + '">' : ''), '', true, text);
+  const pendingFiles = S.attachments.slice();
+  const imageFiles = pendingFiles.filter(f=>f.kind==='image');
+  const docFiles = pendingFiles.filter(f=>f.kind==='document');
+  const attachHtml = pendingFiles.length ? '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">'+pendingFiles.map(f=>'<span style="font-size:10px;padding:4px 7px;border-radius:8px;background:rgba(255,255,255,.12)">'+(f.kind==='image'?'▧ ':'▤ ')+esc(f.name)+'</span>').join('')+'</div>' : '';
+  addMsg('user', md(text || 'Проанализируй вложение') + attachHtml, '', true, text || ('Вложение: '+pendingFiles.map(f=>f.name).join(', ')));
   inp.value = ''; inp.style.height = 'auto'; clearAttach();
   const wait = addMsg('bot', '<div class="typing"><i></i><i></i><i></i></div>', '', false, '');
   try{
     const body = { text: text, model: S.model, answer_mode: 'everyday', history: S.history.slice(0,-1).slice(-8) };
-    if (img) body.images = [img];
+    if (imageFiles.length) body.images = imageFiles.map(f=>f.b64);
+    if (docFiles.length) body.files = docFiles.map(f=>({name:f.name,mime:f.mime,data:f.b64}));
     const j = await api('/api/chat', { method: 'POST', body });
     if (j.ok){
       const answer = j.answer || '';
@@ -705,7 +768,7 @@ async function sendChat(){
       const code = j.error;
       if (code === 'premium_required'){ openPaywall('Нужна подписка', 'Лимит бесплатных обращений к PRO-моделям на сегодня исчерпан.'); }
       else if (code === 'limit_exceeded'){ openPaywall('Лимит исчерпан', 'Дневной лимит сообщений закончился. С подпиской лимиты заметно выше.'); }
-      else toast(errText(code, j.__status));
+      else toast(j.message || (j.file ? j.file + ': ' : '') + errText(code, j.__status));
       haptic('error');
     }
   }catch(e){ wait.remove(); toast('Нет связи с сервером'); }
@@ -777,7 +840,7 @@ function genFail(j, what){
   if (code === 'premium_required') openPaywall('Нужна подписка', 'Бесплатная квота (' + what + ') на этот месяц исчерпана. С подпиской генерации доступны за ✵ хузапоинты.');
   else if (code === 'no_credits') openPaywall('Не хватает ✵', 'На балансе недостаточно хузапоинтов. Пополните баланс или продлите подписку в боте.');
   else if (code === 'limit_exceeded') openPaywall('Лимит исчерпан', 'Бесплатная квота (' + what + ') закончилась. Оформите подписку, чтобы создавать больше.');
-  else toast(errText(code, j.__status));
+  else toast(j.message || (j.file ? j.file + ': ' : '') + errText(code, j.__status));
   haptic('error');
 }
 function dlLink(b64, mime, name){
