@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ХУЗА AI</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#f6f6f8; --panel:#ffffff; --panel2:#f0f0f4; --text:#17171d; --muted:#84848f;
+  --border:rgba(20,20,30,.08); --accent:#6b5cff; --accent2:#4f7cff;
+  --grad:linear-gradient(135deg,#7b5cff 0%,#4f7cff 100%);
+  --good:#1fab61; --warn:#e6a23c; --bad:#e5484d;
+  --shadow:0 10px 30px rgba(30,30,60,.08);
+  --r:18px; --nav-h:64px;
+}
+html[data-theme="dark"]{
+  --bg:#101014; --panel:#1a1a21; --panel2:#23232c; --text:#f2f2f6; --muted:#8f8f9e;
+  --border:rgba(255,255,255,.09);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
+  background:var(--bg); color:var(--text); overflow:hidden;
+  font-size:15px; line-height:1.55;
+}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:760px;margin:0 auto;position:relative}
+
+/* ── header ── */
+.top{display:flex;align-items:center;gap:10px;padding:12px 16px 10px;flex:0 0 auto}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:.2px}
+.orb{width:30px;height:30px;border-radius:10px;background:var(--grad);position:relative;flex:0 0 auto;box-shadow:0 4px 14px rgba(107,92,255,.45)}
+.orb::after{content:"";position:absolute;inset:7px;border-radius:50%;background:rgba(255,255,255,.9);clip-path:polygon(0 55%,100% 25%,100% 45%,0 75%)}
+.top .spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer}
+.pill .star{color:#f7b731}
+.pill.sub-on{background:var(--grad);color:#fff;border:none}
+
+/* ── pages ── */
+.page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding-bottom:calc(var(--nav-h) + 18px)}
+.page.active{display:block}
+.pagepad{padding:4px 16px 0}
+
+/* ── bottom nav ── */
+.nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--border);z-index:40}
+.nav button{flex:1;background:none;border:none;color:var(--muted);font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-family:inherit}
+.nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--accent)}
+
+/* ── chat ── */
+#chatScroll{display:flex;flex-direction:column;min-height:100%}
+.hero{text-align:center;padding:46px 24px 22px}
+.hero .bigorb{width:64px;height:64px;border-radius:22px;background:var(--grad);margin:0 auto 18px;box-shadow:0 12px 34px rgba(107,92,255,.45);position:relative}
+.hero .bigorb::after{content:"";position:absolute;inset:15px;border-radius:50%;background:rgba(255,255,255,.92);clip-path:polygon(0 55%,100% 25%,100% 45%,0 75%)}
+.hero h1{font-size:23px;font-weight:800;letter-spacing:-.3px}
+.hero p{color:var(--muted);margin-top:6px;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:8px 16px 20px}
+.chip{padding:9px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--border);font-size:13px;color:var(--text);cursor:pointer;font-family:inherit}
+.chip:active{transform:scale(.97)}
+.msgs{display:flex;flex-direction:column;gap:14px;padding:12px 16px}
+.msg{max-width:86%;padding:11px 14px;border-radius:16px;font-size:14.5px;word-wrap:break-word;overflow-wrap:break-word}
+.msg.user{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:6px}
+.msg.bot{align-self:flex-start;background:var(--panel);border:1px solid var(--border);border-bottom-left-radius:6px;box-shadow:var(--shadow)}
+.msg.bot .mlabel{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.msg pre{background:var(--panel2);border-radius:10px;padding:10px;overflow-x:auto;font-size:12.5px;margin:8px 0}
+.msg code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;background:var(--panel2);border-radius:5px;padding:1px 5px}
+.msg pre code{background:none;padding:0}
+.msg img{max-width:100%;border-radius:10px;margin-top:6px}
+.typing{display:inline-flex;gap:5px;padding:4px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:tp 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
+
+/* ── composer ── */
+.composer{position:absolute;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:8px 12px 10px;z-index:30;background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.combox{background:var(--panel);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:10px 12px 8px}
+.combox textarea{width:100%;border:none;outline:none;background:none;resize:none;color:var(--text);font-family:inherit;font-size:15px;max-height:110px;line-height:1.45}
+.combox textarea::placeholder{color:var(--muted)}
+.comrow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.modelbtn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:650;color:var(--text);background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;max-width:60%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.modelbtn .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);flex:0 0 auto}
+.comrow .spacer{flex:1}
+.iconbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--panel2);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+.iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sendbtn{width:38px;height:38px;border-radius:50%;border:none;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;box-shadow:0 6px 16px rgba(107,92,255,.4)}
+.sendbtn:disabled{opacity:.45;box-shadow:none}
+.sendbtn svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.attachpreview{display:flex;gap:8px;margin-bottom:6px}
+.attachpreview .ap{position:relative}
+.attachpreview img{width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+.attachpreview .x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--bad);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── cards / studio ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card h3{font-size:15px;font-weight:750;display:flex;align-items:center;gap:8px}
+.card .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.seg{display:flex;background:var(--panel2);border-radius:14px;padding:4px;gap:4px;margin:12px 0 16px}
+.seg button{flex:1;border:none;background:none;padding:9px 4px;border-radius:11px;font-size:13px;font-weight:650;color:var(--muted);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+label.flabel{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 7px}
+textarea.finput, input.finput{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:14.5px;outline:none;resize:none}
+textarea.finput:focus{border-color:var(--accent)}
+.optrow{display:flex;flex-wrap:wrap;gap:8px}
+.opt{padding:8px 13px;border-radius:12px;background:var(--panel2);border:1.5px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;color:var(--text)}
+.opt small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.opt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel2));color:var(--accent)}
+.opt.on small{color:var(--accent)}
+.quota{display:block;background:color-mix(in srgb,var(--accent) 8%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:13px;padding:9px 13px;font-size:12.5px;font-weight:600;margin-top:14px;color:var(--text)}
+.quota.warn{background:color-mix(in srgb,var(--warn) 10%,var(--panel));border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.genbtn{width:100%;margin-top:14px;border:none;border-radius:15px;background:var(--grad);color:#fff;font-size:15px;font-weight:750;padding:14px;cursor:pointer;font-family:inherit;box-shadow:0 8px 22px rgba(107,92,255,.35);display:flex;align-items:center;justify-content:center;gap:8px}
+.genbtn:disabled{opacity:.55;box-shadow:none}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.result{margin-top:14px;display:none}
+.result.show{display:block}
+.result img,.result video{width:100%;border-radius:14px;border:1px solid var(--border)}
+.result audio{width:100%;margin-top:4px}
+.result .rcap{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.dlbtn{font-size:12px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;font-family:inherit}
+.progressnote{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;display:none}
+
+/* ── plans ── */
+.plan{position:relative;overflow:hidden}
+.plan .price{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.plan .price small{font-size:13px;color:var(--muted);font-weight:600}
+.plan ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:7px}
+.plan li{font-size:13.5px;display:flex;gap:8px;align-items:flex-start}
+.plan li::before{content:"✓";color:var(--good);font-weight:800;flex:0 0 auto}
+.plan li.no::before{content:"—";color:var(--muted)}
+.plan .badge{position:absolute;top:14px;right:14px;background:var(--grad);color:#fff;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.4px}
+.plan .badge.gray{background:var(--panel2);color:var(--muted);border:1px solid var(--border)}
+.planbtn{width:100%;margin-top:14px;border:none;border-radius:13px;background:var(--grad);color:#fff;font-weight:750;font-size:14px;padding:12px;cursor:pointer;font-family:inherit}
+.planbtn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+
+/* ── profile ── */
+.pcard{display:flex;align-items:center;gap:14px}
+.avatar{width:54px;height:54px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.stat{background:var(--panel2);border-radius:14px;padding:12px}
+.stat .v{font-size:19px;font-weight:800}
+.stat .k{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px}
+.bar{height:7px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--grad)}
+.limitrow{margin-top:13px}
+.limitrow .t{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.limitrow .t span:last-child{color:var(--muted)}
+
+/* ── sheets ── */
+.overlay{position:absolute;inset:0;background:rgba(10,10,18,.45);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.22s;z-index:60}
+.overlay.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;z-index:70;transform:translateY(105%);transition:transform .28s cubic-bezier(.32,.72,.33,1);max-height:78%;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.sheet.show{transform:translateY(0)}
+.sheet .grip{width:38px;height:4px;border-radius:99px;background:var(--border);margin:10px auto 4px;flex:0 0 auto}
+.sheet .shead{padding:8px 18px 10px;font-size:16px;font-weight:800;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between}
+.sheet .sbody{overflow-y:auto;padding:0 14px 18px}
+.mrow{display:flex;align-items:center;gap:11px;padding:12px 10px;border-radius:14px;cursor:pointer}
+.mrow:active{background:var(--panel2)}
+.mrow.on{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.mrow .mdot{width:34px;height:34px;border-radius:11px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.mrow .mtxt{flex:1;min-width:0}
+.mrow .mname{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.mrow .mtags{font-size:11.5px;color:var(--muted);margin-top:1px}
+.mrow .check{color:var(--accent);font-weight:900;opacity:0}
+.mrow.on .check{opacity:1}
+.tagpro{font-size:9.5px;font-weight:800;background:var(--grad);color:#fff;padding:2px 7px;border-radius:99px;letter-spacing:.5px}
+.tagfree{font-size:9.5px;font-weight:800;background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good);padding:2px 7px;border-radius:99px;letter-spacing:.5px}
+.groupt{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:12px 10px 4px}
+
+/* ── toast / banner ── */
+#toast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-90px);background:var(--panel);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:11px 16px;font-size:13.5px;font-weight:600;z-index:100;transition:.3s;max-width:88%;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.demobanner{margin:0 16px 10px;background:color-mix(in srgb,var(--warn) 12%,var(--panel));border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);border-radius:13px;padding:9px 13px;font-size:12.5px;font-weight:600;display:none}
+.demobanner.show{display:block}
+.skel{background:linear-gradient(90deg,var(--panel2) 25%,var(--panel) 50%,var(--panel2) 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:12px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="top">
+    <div class="logo"><div class="orb"></div><span>ХУЗА AI</span></div>
+    <div class="spacer"></div>
+    <div class="pill" id="creditsPill" onclick="go('plans')"><span class="star">✵</span><span id="creditsVal">…</span></div>
+    <div class="pill" id="subPill" onclick="go('plans')">Free</div>
+  </div>
+
+  <div class="demobanner" id="demoBanner">⚠️ Демо-режим — откройте мини-апп через Telegram, чтобы всё работало</div>
+
+  <!-- ЧАТ -->
+  <div class="page active" id="page-chat">
+    <div id="chatScroll">
+      <div class="hero" id="hero">
+        <div class="bigorb"></div>
+        <h1 id="heroTitle">Привет!</h1>
+        <p>Задайте любой вопрос — или создайте фото, музыку и видео в Студии</p>
+        <div class="chips">
+          <button class="chip" onclick="suggest('Объясни простыми словами, как работает нейро��еть')">🧠 Как работает ИИ</button>
+          <button class="chip" onclick="suggest('Напиши короткое поздравление с днём рождения для друга')">🎉 Поздравление</button>
+          <button class="chip" onclick="suggest('Помоги составить план тренировок на неделю')">💪 План тренировок</button>
+          <button class="chip" onclick="go('studio')">🎨 Создать картинку</button>
+        </div>
+      </div>
+      <div class="msgs" id="msgs"></div>
+    </div>
+  </div>
+
+  <!-- СТУДИЯ -->
+  <div class="page" id="page-studio">
+    <div class="pagepad">
+      <div class="seg" id="studioSeg">
+        <button class="on" data-s="img" onclick="studioTab('img')">🖼 Фото</button>
+        <button data-s="music" onclick="studioTab('music')">🎵 Музыка</button>
+        <button data-s="video" onclick="studioTab('video')">🎬 Видео</button>
+      </div>
+
+      <div id="studio-img">
+        <div class="card">
+          <h3>Генерация изображений</h3>
+          <div class="sub">Опишите, что хотите увидеть — чем подробнее, тем лучше</div>
+          <label class="flabel">Промпт</label>
+          <textarea class="finput" id="imgPrompt" rows="3" placeholder="Например: кот в скафандре на Луне, кинематографичный свет"></textarea>
+          <label class="flabel">Модель</label>
+          <div class="optrow" id="imgModels"></div>
+          <label class="flabel">Формат</label>
+          <div class="optrow" id="imgRatios"></div>
+          <div class="quota" id="imgQuota"></div>
+          <button class="genbtn" id="imgGo" onclick="genImage()"><span id="imgGoTxt">Создать изображение</span></button>
+          <div class="progressnote" id="imgNote">Обычно занимает 10–30 секунд…</div>
+          <div class="result" id="imgResult"></div>
+        </div>
+      </div>
+
+      <div id="studio-music" style="display:none">
+        <div class="card">
+          <h3>Генерация музыки</h3>
+          <div class="sub" id="musicSub">Опишите стиль и настроение трека</div>
+          <label class="flabel">Стиль и описание</label>
+          <textarea class="finput" id="musicPrompt" rows="3" placeholder="Например: спокойный lo-fi бит с пианино для учёбы"></textarea>
+          <label class="flabel">Текст песни (необязательно)</label>
+          <textarea class="finput" id="musicLyrics" rows="3" placeholder="Оставьте пустым для инструментала"></textarea>
+          <div class="quota" id="musicQuota"></div>
+          <button class="genbtn" id="musicGo" onclick="genMusic()"><span id="musicGoTxt">Создать трек</span></button>
+          <div class="progressnote" id="musicNote">Генерация музыки занимает до 1–2 минут — не закрывайте окно</div>
+          <div class="result" id="musicResult"></div>
+        </div>
+      </div>
+
+      <div id="studio-video" style="display:none">
+        <div class="card">
+          <h3>Генерация видео</h3>
+          <div class="sub">Veo создаст короткий ролик со звуком по вашему описанию</div>
+          <label class="flabel">Промпт</label>
+          <textarea class="finput" id="videoPrompt" rows="3" placeholder="Например: волны океана на закате, съёмка с дрона"></textarea>
+          <label class="flabel">Модель</label>
+          <div class="optrow" id="videoModels"></div>
+          <label class="flabel">Формат</label>
+          <div class="optrow" id="videoRatios"></div>
+          <label class="flabel">Длительность</label>
+          <div class="optrow" id="videoDurs"></div>
+          <div class="quota" id="videoQuota"></div>
+          <button class="genbtn" id="videoGo" onclick="genVideo()"><span id="videoGoTxt">Создать видео</span></button>
+          <div class="progressnote" id="videoNote">Генерация видео занимает 2–4 минуты — не закрывайте окно</div>
+          <div class="result" id="videoResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ТАРИФЫ -->
+  <div class="page" id="page-plans">
+    <div class="pagepad" id="plansWrap"></div>
+  </div>
+
+  <!-- ПРОФИЛЬ -->
+  <div class="page" id="page-profile">
+    <div class="pagepad" id="profileWrap"></div>
+  </div>
+
+  <!-- composer (только для чата) -->
+  <div class="composer" id="composer">
+    <div class="combox">
+      <div class="attachpreview" id="attachPreview" style="display:none"></div>
+      <textarea id="input" rows="1" placeholder="Спросите что-нибудь…"></textarea>
+      <div class="comrow">
+        <button class="modelbtn" id="modelBtn" onclick="openSheet('modelSheet')"><span class="dot"></span><span id="modelBtnName">Модель</span></button>
+        <div class="spacer"></div>
+        <button class="iconbtn" id="attachBtn" title="Прикрепить фото" onclick="document.getElementById('fileInput').click()" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M21.4 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.2-9.19a4 4 0 015.65 5.66l-9.2 9.19a2 2 0 01-2.82-2.83l8.49-8.48"/></svg>
+        </button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFile(this)">
+        <button class="sendbtn" id="sendBtn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- nav -->
+  <div class="nav">
+    <button class="on" id="nav-chat" onclick="go('chat')"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Чат</button>
+    <button id="nav-studio" onclick="go('studio')"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>Студия</button>
+    <button id="nav-plans" onclick="go('plans')"><svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 6 3-6M12 21l-3-12M12 21l3-12"/></svg>Тарифы</button>
+    <button id="nav-profile" onclick="go('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</button>
+  </div>
+
+  <!-- sheets -->
+  <div class="overlay" id="overlay" onclick="closeSheets()"></div>
+  <div class="sheet" id="modelSheet">
+    <div class="grip"></div>
+    <div class="shead">Выбор модели</div>
+    <div class="sbody" id="modelList"></div>
+  </div>
+  <div class="sheet" id="paywallSheet">
+    <div class="grip"></div>
+    <div class="shead" id="paywallTitle">Нужна подписка</div>
+    <div class="sbody" id="paywallBody"></div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+<script>
+"use strict";
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+const API_BASE = window.HUZA_API_BASE || ((location.hostname.endsWith('.github.io') || location.protocol === 'file:') ? 'https://bot.huzandelpi.ru' : '');
+const BOT_LINK = 'https://t.me/huza_ai_bot';
+
+const S = {
+  demo: false, limits: null, model: localStorage.getItem('huza_model') || '',
+  history: [], busy: false, attach: null,
+  img: { model: '', ratio: '1:1' },
+  video: { model: '', ratio: '16:9', dur: 8 },
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const ERR = {
+  rate_limit_exceeded: 'Слишком много запросов — подождите минуту',
+  limit_exceeded: 'Лимит исчерпан — оформите подписку или подождите сброса',
+  auth_required: 'Откройте мини-апп через Telegram',
+  invalid_init_data: 'Ошибка авторизации — переоткройте мини-апп',
+  subscription_required: 'Подпишитесь на каналы бота, чтобы продолжить',
+  terms_required: 'Сначала примите условия в боте (/start)',
+  premium_required: 'Это доступно по подписке',
+  model_disabled: 'Модель временно отключена',
+  empty_message: 'Введите текст',
+  queue_full: 'Сервер перегружен — попробуйте через минуту',
+  service_disabled: 'Сервис временно отключён администратором',
+  no_credits: 'Не хватает ✵ хузапоинтов — пополните баланс в боте',
+  no_vision_model: 'Нет доступной модели для фото',
+};
+function errText(code, status){
+  if (ERR[code]) return ERR[code];
+  if (status === 402) return ERR.premium_required;
+  if (status === 429) return ERR.rate_limit_exceeded;
+  return 'Что-то пошло не так — попробуйте ещё раз';
+}
+
+let toastT = null;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200);
+}
+function haptic(kind){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred(kind||'success'); }catch(e){} }
+
+/* ── theme ── */
+function applyTheme(){
+  const dark = tg ? tg.colorScheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  try{ tg && tg.setHeaderColor(dark ? '#101014' : '#f6f6f8'); tg && tg.setBackgroundColor(dark ? '#101014' : '#f6f6f8'); }catch(e){}
+}
+
+/* ── navigation ── */
+function go(p){
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  $('page-' + p).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(el => el.classList.remove('on'));
+  $('nav-' + p).classList.add('on');
+  $('composer').style.display = p === 'chat' ? '' : 'none';
+}
+function studioTab(s){
+  ['img','music','video'].forEach(k => { $('studio-' + k).style.display = k === s ? '' : 'none'; });
+  document.querySelectorAll('#studioSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+}
+
+/* ── sheets ── */
+function openSheet(id){ $('overlay').classList.add('show'); $(id).classList.add('show'); }
+function closeSheets(){ $('overlay').classList.remove('show'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show')); }
+
+/* ── API ── */
+function initData(){ return tg && tg.initData ? tg.initData : ''; }
+async function api(path, opts){
+  const o = opts || {};
+  const headers = { 'Content-Type': 'application/json' };
+  if (initData()) headers['X-Telegram-Init-Data'] = initData();
+  const res = await fetch(API_BASE + path, {
+    method: o.method || 'GET', headers,
+    body: o.body ? JSON.stringify(Object.assign({ init_data: initData() }, o.body)) : undefined,
+  });
+  let j = {};
+  try{ j = await res.json(); }catch(e){}
+  j.__status = res.status;
+  return j;
+}
+
+/* ── demo data (предпросмотр вне Telegram) ── */
+const DEMO_LIMITS = {
+  ok: true, first_name: 'Гость', has_sub: false, sub_plan: '', sub_expires: '',
+  credits: 12, is_admin: false, streak_days: 3, referrals: 1, level: 'Новичок',
+  pro_used: 0, pro_max: 1, free_daily_msgs: 10, free_daily_paid: 1,
+  free_img_left: 2, free_music_left: 1, free_video_left: 1,
+  free_month: { img: 2, music: 1, video: 1 },
+  costs: { image: 5, music: 15, video_min: 35, video_max: 55 },
+  service_enabled: { image: true, video: true, music: true },
+  models: [
+    { key: 'gpt', label: 'GPT-5 Mini', premium: false, vision: true, web_search: false, thinking: false },
+    { key: 'gemini', label: 'Gemini 2.5 Flash', premium: false, vision: true, web_search: true, thinking: false },
+    { key: 'deepseek', label: 'DeepSeek V3', premium: false, vision: false, web_search: false, thinking: false },
+    { key: 'claude', label: 'Claude 4.5 Sonnet', premium: true, vision: true, web_search: false, thinking: true },
+    { key: 'gpt5', label: 'GPT-5.2', premium: true, vision: true, web_search: true, thinking: true },
+  ],
+  img_models: [
+    { key: 'zimage', label: 'Z-Image Turbo', desc: 'Быстрая и качественная', cost: 5 },
+    { key: 'flux', label: 'FLUX.2', desc: 'Фотореализм', cost: 8 },
+  ],
+  video_models: [
+    { key: 'lite', label: 'Veo 3.1 Lite', desc: 'Быстрая', cost: 35 },
+    { key: 'flash', label: 'Veo 3.1 Flash', desc: 'Максимальное качество', cost: 55 },
+  ],
+  music_models: [ { key: 'suno', label: 'Lyria 3 Pro', desc: 'Музыка с вокалом и текстом', cost: 15 } ],
+  img_ratios: ['1:1','4:3','3:4','16:9','9:16'], video_ratios: ['16:9','9:16','1:1'], video_durations: [4,6,8],
+  plans: [
+    { key: 'start', name: 'Старт', price: 299, days: 7, credits: 250, daily_credits: 8, description: '' },
+    { key: 'week', name: 'Оптимальный', price: 499, days: 30, credits: 500, daily_credits: 10, description: '' },
+    { key: 'month', name: 'Продвинутый', price: 749, days: 30, credits: 900, daily_credits: 20, description: '' },
+  ],
+};
+
+/* ── limits ── */
+async function fetchLimits(){
+  if (!initData()){
+    S.demo = true; S.limits = DEMO_LIMITS; $('demoBanner').classList.add('show');
+    renderAll(); return;
+  }
+  try{
+    const j = await api('/api/limits?init_data=' + encodeURIComponent(initData()));
+    if (j && (j.ok === undefined || j.ok)){ S.limits = j; renderAll(); }
+    else toast(errText(j.error, j.__status));
+  }catch(e){ toast('Нет связи с сервером'); }
+}
+
+function curModel(){
+  const L = S.limits; if (!L || !L.models || !L.models.length) return null;
+  let m = L.models.find(x => x.key === S.model);
+  if (!m) m = L.models.find(x => !x.premium) || L.models[0];
+  return m;
+}
+
+function renderAll(){
+  const L = S.limits; if (!L) return;
+  // header
+  $('creditsVal').textContent = (L.credits != null ? L.credits : 0);
+  const sp = $('subPill');
+  if (L.has_sub){ sp.textContent = '⭐ ' + (L.sub_plan || 'PRO'); sp.classList.add('sub-on'); }
+  else { sp.textContent = 'Free'; sp.classList.remove('sub-on'); }
+  const nm = (L.first_name || '').trim();
+  $('heroTitle').textContent = nm ? ('Привет, ' + nm + '!') : 'Привет!';
+  // model button
+  const m = curModel();
+  if (m){ S.model = m.key; $('modelBtnName').textContent = m.label; $('attachBtn').style.display = m.vision ? '' : 'none'; }
+  renderModelSheet(); renderStudio(); renderPlans(); renderProfile();
+}
+
+/* ── model sheet ── */
+function modelTags(m){
+  const t = [];
+  if (m.vision) t.push('👁 фото');
+  if (m.web_search) t.push('🌐 поиск');
+  if (m.thinking) t.push('🧠 размыш��ения');
+  return t.join(' · ');
+}
+function renderModelSheet(){
+  const L = S.limits, box = $('modelList');
+  if (!L || !L.models){ box.innerHTML = ''; return; }
+  const free = L.models.filter(x => !x.premium), pro = L.models.filter(x => x.premium);
+  let h = '';
+  const row = mm => '<div class="mrow' + (mm.key === S.model ? ' on' : '') + '" onclick="pickModel(\'' + mm.key + '\')">' +
+    '<div class="mdot">✦</div><div class="mtxt"><div class="mname">' + esc(mm.label) +
+    (mm.premium ? ' <span class="tagpro">PRO</span>' : ' <span class="tagfree">FREE</span>') + '</div>' +
+    '<div class="mtags">' + (modelTags(mm) || 'Текстовая модель') + '</div></div><div class="check">✓</div></div>';
+  if (free.length){ h += '<div class="groupt">Бесплатные</div>' + free.map(row).join(''); }
+  if (pro.length){ h += '<div class="groupt">PRO — по подписке' + (!L.has_sub ? ' · ' + (L.free_daily_paid || 1) + ' проба/день бесплатно' : '') + '</div>' + pro.map(row).join(''); }
+  box.innerHTML = h;
+}
+function pickModel(key){
+  const L = S.limits, m = (L.models || []).find(x => x.key === key);
+  if (!m) return;
+  S.model = key; localStorage.setItem('huza_model', key);
+  $('modelBtnName').textContent = m.label;
+  $('attachBtn').style.display = m.vision ? '' : 'none';
+  renderModelSheet(); closeSheets(); haptic('success');
+  if (m.premium && !L.has_sub && !L.is_admin){
+    const used = L.pro_used || 0, mx = L.pro_max != null ? L.pro_max : (L.free_daily_paid || 1);
+    if (used >= mx) openPaywall('Модель «' + m.label + '» — PRO', 'Бесплатная проба PRO-моделей на сегодня использована. Оформите подписку, чтобы общаться без ограничений.');
+    else toast('PRO-модель: без подписки доступна ' + mx + ' проба в день');
+  }
+}
+
+/* ── paywall ── */
+function openPaywall(title, text){
+  $('paywallTitle').textContent = title || 'Нужна подписка';
+  const L = S.limits, plans = (L && L.plans) || [];
+  let h = '<p style="color:var(--muted);font-size:13.5px;padding:0 6px 12px">' + esc(text || '') + '</p>';
+  plans.forEach(p => {
+    h += '<div class="mrow" onclick="openBot()"><div class="mdot">⭐</div><div class="mtxt"><div class="mname">' + esc(p.name) +
+      '</div><div class="mtags">' + p.price + ' ₽ · ' + p.days + ' дн. · ' + p.credits + ' ✵ сразу + ' + p.daily_credits + ' ✵/день</div></div><div class="check" style="opacity:1">›</div></div>';
+  });
+  h += '<button class="planbtn" style="margin-top:10px" onclick="openBot()">Оформить в боте</button>';
+  $('paywallBody').innerHTML = h;
+  openSheet('paywallSheet');
+}
+function openBot(){
+  closeSheets();
+  try{ if (tg){ tg.openTelegramLink(BOT_LINK); return; } }catch(e){}
+  window.open(BOT_LINK, '_blank');
+}
+
+/* ── chat ── */
+function md(t){
+  let h = esc(t);
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (a, l, c) => '<pre><code>' + c + '</code></pre>');
+  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  h = h.replace(/(^|\n)### ([^\n]+)/g, '$1<b>$2</b>');
+  h = h.replace(/(^|\n)## ([^\n]+)/g, '$1<b>$2</b>');
+  h = h.replace(/(^|\n)# ([^\n]+)/g, '$1<b>$2</b>');
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+function addMsg(role, html, label){
+  $('hero').style.display = 'none';
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = (label ? '<div class="mlabel">' + esc(label) + '</div>' : '') + html;
+  $('msgs').appendChild(d);
+  const pg = $('page-chat'); pg.scrollTop = pg.scrollHeight;
+  return d;
+}
+function suggest(t){ $('input').value = t; sendChat(); }
+function onFile(inp){
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  if (f.size > 6 * 1024 * 1024){ toast('Фото слишком большое (до 6 МБ)'); return; }
+  const r = new FileReader();
+  r.onload = () => {
+    S.attach = String(r.result).split(',')[1];
+    $('attachPreview').style.display = '';
+    $('attachPreview').innerHTML = '<div class="ap"><img src="' + r.result + '"><div class="x" onclick="clearAttach()">✕</div></div>';
+  };
+  r.readAsDataURL(f);
+}
+function clearAttach(){ S.attach = null; $('attachPreview').style.display = 'none'; $('attachPreview').innerHTML = ''; }
+
+async function sendChat(){
+  if (S.busy) return;
+  const inp = $('input'), text = inp.value.trim();
+  if (!text && !S.attach) return;
+  if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
+  const m = curModel(); if (!m){ toast('Нет доступных моделей'); return; }
+  S.busy = true; $('sendBtn').disabled = true;
+  const img = S.attach;
+  addMsg('user', md(text) + (img ? '<img src="data:image/jpeg;base64,' + img + '">' : ''));
+  inp.value = ''; inp.style.height = 'auto'; clearAttach();
+  const wait = addMsg('bot', '<div class="typing"><i></i><i></i><i></i></div>');
+  try{
+    const body = { text: text, model: S.model, answer_mode: 'everyday', history: S.history.slice(-8) };
+    if (img) body.images = [img];
+    const j = await api('/api/chat', { method: 'POST', body });
+    if (j.ok){
+      wait.innerHTML = '<div class="mlabel">' + esc(j.model || m.label) + '</div>' + md(j.answer || '');
+      S.history.push({ role: 'user', content: text });
+      S.history.push({ role: 'assistant', content: j.answer || '' });
+      haptic('success');
+    } else {
+      wait.remove();
+      const code = j.error;
+      if (code === 'premium_required'){ openPaywall('Нужна подписка', 'Лимит бесплатных обращений к PRO-моделям на сегодня исчерпан.'); }
+      else if (code === 'limit_exceeded'){ openPaywall('Лимит исчерпан', 'Дневной лимит сообщений закончился. С подпиской лимиты заметно выше.'); }
+      else toast(errText(code, j.__status));
+      haptic('error');
+    }
+  }catch(e){ wait.remove(); toast('Нет связи с сервером'); }
+  S.busy = false; $('sendBtn').disabled = false;
+  fetchLimitsSoft();
+}
+let limT = null;
+function fetchLimitsSoft(){ clearTimeout(limT); limT = setTimeout(fetchLimits, 800); }
+
+/* ── studio ── */
+function optRow(boxId, items, curKey, onPick, small){
+  const box = $(boxId);
+  box.innerHTML = items.map(it =>
+    '<div class="opt' + (String(it.key) === String(curKey) ? ' on' : '') + '" onclick="' + onPick + '(\'' + String(it.key).replace(/'/g,'') + '\')">' +
+    esc(it.label) + (small && it.small ? '<small>' + esc(it.small) + '</small>' : '') + '</div>'
+  ).join('');
+}
+function pickImgModel(k){ S.img.model = k; renderStudio(); }
+function pickImgRatio(k){ S.img.ratio = k; renderStudio(); }
+function pickVideoModel(k){ S.video.model = k; renderStudio(); }
+function pickVideoRatio(k){ S.video.ratio = k; renderStudio(); }
+function pickVideoDur(k){ S.video.dur = parseInt(k, 10) || 8; renderStudio(); }
+
+function quotaHtml(kind, freeLeft, freeMax, cost){
+  const L = S.limits;
+  if (!L.has_sub && !L.is_admin){
+    if (freeLeft > 0) return '🎁 Бесплатно без подписки: осталось <b>' + freeLeft + ' из ' + freeMax + '</b> в этом месяце';
+    return '⚠️ Бесплатная квота месяца исчерпана — нужна подписка';
+  }
+  return 'Спишется <b>' + cost + ' ✵</b> · баланс: ' + (L.credits != null ? L.credits : 0) + ' ✵';
+}
+
+function renderStudio(){
+  const L = S.limits; if (!L) return;
+  // ФОТО
+  const ims = L.img_models || [];
+  if (ims.length && !ims.find(x => x.key === S.img.model)) S.img.model = ims[0].key;
+  optRow('imgModels', ims.map(x => ({ key: x.key, label: x.label, small: x.cost + ' ✵' })), S.img.model, 'pickImgModel', true);
+  optRow('imgRatios', (L.img_ratios || ['1:1']).map(x => ({ key: x, label: x })), S.img.ratio, 'pickImgRatio');
+  const im = ims.find(x => x.key === S.img.model) || { cost: (L.costs || {}).image || 5 };
+  const iq = $('imgQuota');
+  if (!(L.service_enabled || {}).image){ iq.innerHTML = '⛔ Генерация изображений временно отключена'; iq.classList.add('warn'); $('imgGo').disabled = true; }
+  else { iq.innerHTML = quotaHtml('img', L.free_img_left || 0, (L.free_month || {}).img || 2, im.cost); iq.classList.toggle('warn', !L.has_sub && !L.is_admin && !(L.free_img_left > 0)); $('imgGo').disabled = false; }
+  // МУЗЫКА
+  const mm = (L.music_models || [])[0];
+  if (mm) $('musicSub').textContent = mm.label + ' — ' + (mm.desc || 'опишите стиль и настроение трека');
+  const mq = $('musicQuota');
+  if (!(L.service_enabled || {}).music){ mq.innerHTML = '⛔ Генерация музыки временно отключена'; mq.classList.add('warn'); $('musicGo').disabled = true; }
+  else { mq.innerHTML = quotaHtml('music', L.free_music_left || 0, (L.free_month || {}).music || 1, (mm && mm.cost) || (L.costs || {}).music || 15); mq.classList.toggle('warn', !L.has_sub && !L.is_admin && !(L.free_music_left > 0)); $('musicGo').disabled = false; }
+  // ВИДЕО
+  const vms = L.video_models || [];
+  if (vms.length && !vms.find(x => x.key === S.video.model)) S.video.model = vms[0].key;
+  optRow('videoModels', vms.map(x => ({ key: x.key, label: x.label, small: x.cost + ' ✵' })), S.video.model, 'pickVideoModel', true);
+  optRow('videoRatios', (L.video_ratios || ['16:9']).map(x => ({ key: x, label: x })), S.video.ratio, 'pickVideoRatio');
+  optRow('videoDurs', (L.video_durations || [8]).map(x => ({ key: x, label: x + ' сек' })), S.video.dur, 'pickVideoDur');
+  const vm = vms.find(x => x.key === S.video.model) || { cost: (L.costs || {}).video_min || 35 };
+  const vq = $('videoQuota');
+  if (!(L.service_enabled || {}).video){ vq.innerHTML = '⛔ Генерация видео временно отключена'; vq.classList.add('warn'); $('videoGo').disabled = true; }
+  else { vq.innerHTML = quotaHtml('video', L.free_video_left || 0, (L.free_month || {}).video || 1, vm.cost); vq.classList.toggle('warn', !L.has_sub && !L.is_admin && !(L.free_video_left > 0)); $('videoGo').disabled = false; }
+}
+
+function genLock(kind, on){
+  $(kind + 'Go').disabled = on;
+  $(kind + 'GoTxt').innerHTML = on ? '<span class="spin"></span>&nbsp; Генерация…' : ({ img: 'Создать изображение', music: 'Создать трек', video: 'Создать видео' })[kind];
+  $(kind + 'Note').style.display = on ? 'block' : 'none';
+}
+function genFail(j, what){
+  const code = j.error;
+  if (code === 'premium_required') openPaywall('Нужна подписка', 'Бесплатная квота (' + what + ') на этот месяц исчерпана. С подпиской генерации доступны за ✵ хузапоинты.');
+  else if (code === 'no_credits') openPaywall('Не хватает ✵', 'На балансе недостаточно хузапоинтов. Пополните баланс или продлите подписку в боте.');
+  else if (code === 'limit_exceeded') openPaywall('Лимит исчерпан', 'Бесплатная квота (' + what + ') закончилась. Оформите подписку, чтобы создавать больше.');
+  else toast(errText(code, j.__status));
+  haptic('error');
+}
+function dlLink(b64, mime, name){
+  return '<button class="dlbtn" onclick="saveB64(\'' + name + '\')">Скачать</button>';
+}
+const SAVED = {};
+function saveB64(name){
+  const it = SAVED[name]; if (!it) return;
+  const a = document.createElement('a');
+  a.href = 'data:' + it.mime + ';base64,' + it.b64; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function genImage(){
+  const p = $('imgPrompt').value.trim();
+  if (!p){ toast('Опишите изображение'); return; }
+  if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
+  genLock('img', true);
+  try{
+    const j = await api('/api/imggen', { method: 'POST', body: { prompt: p, model: S.img.model, ratio: S.img.ratio } });
+    if (j.ok && j.image_b64){
+      SAVED['huza-image.png'] = { b64: j.image_b64, mime: 'image/png' };
+      $('imgResult').innerHTML = '<img src="data:image/png;base64,' + j.image_b64 + '">' +
+        '<div class="rcap"><span>' + esc(j.model_label || '') + '</span>' + dlLink(j.image_b64, 'image/png', 'huza-image.png') + '</div>';
+      $('imgResult').classList.add('show'); haptic('success');
+    } else genFail(j, '2 фото в месяц');
+  }catch(e){ toast('Нет связи с сервером'); }
+  genLock('img', false); fetchLimitsSoft();
+}
+
+async function genMusic(){
+  const p = $('musicPrompt').value.trim();
+  if (!p){ toast('Опишите стиль трека'); return; }
+  if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
+  genLock('music', true);
+  try{
+    const j = await api('/api/musicgen', { method: 'POST', body: { prompt: p, lyrics: $('musicLyrics').value.trim() } });
+    if (j.ok && j.audio_b64){
+      const ext = j.mime === 'audio/wav' ? 'wav' : 'mp3';
+      SAVED['huza-track.' + ext] = { b64: j.audio_b64, mime: j.mime };
+      $('musicResult').innerHTML = '<audio controls src="data:' + j.mime + ';base64,' + j.audio_b64 + '"></audio>' +
+        '<div class="rcap"><span>' + esc(j.model_label || '') + '</span>' + dlLink(j.audio_b64, j.mime, 'huza-track.' + ext) + '</div>';
+      $('musicResult').classList.add('show'); haptic('success');
+    } else genFail(j, '1 трек в месяц');
+  }catch(e){ toast('Нет связи с сервером'); }
+  genLock('music', false); fetchLimitsSoft();
+}
+
+async function genVideo(){
+  const p = $('videoPrompt').value.trim();
+  if (!p){ toast('Опишите видео'); return; }
+  if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
+  genLock('video', true);
+  try{
+    const j = await api('/api/videogen', { method: 'POST', body: { prompt: p, model: S.video.model, ratio: S.video.ratio, duration: S.video.dur } });
+    if (j.ok && j.video_b64){
+      SAVED['huza-video.mp4'] = { b64: j.video_b64, mime: 'video/mp4' };
+      $('videoResult').innerHTML = '<video controls playsinline src="data:video/mp4;base64,' + j.video_b64 + '"></video>' +
+        '<div class="rcap"><span>' + esc(j.model_label || '') + '</span>' + dlLink(j.video_b64, 'video/mp4', 'huza-video.mp4') + '</div>';
+      $('videoResult').classList.add('show'); haptic('success');
+    } else genFail(j, '1 видео в месяц');
+  }catch(e){ toast('Нет связи с сервером'); }
+  genLock('video', false); fetchLimitsSoft();
+}
+
+/* ── plans ── */
+function renderPlans(){
+  const L = S.limits, w = $('plansWrap'); if (!L || !w) return;
+  const fm = L.free_month || { img: 2, music: 1, video: 1 };
+  let h = '';
+  h += '<div class="card plan"><span class="badge gray">БЕЗ ПОДПИСКИ</span><h3>Free</h3>' +
+    '<div class="price">0 ₽ <small>навсегда</small></div><ul>' +
+    '<li>' + (L.free_daily_msgs || 10) + ' сообщений бесплатным моделям в день</li>' +
+    '<li>' + (L.free_daily_paid || 1) + ' проба PRO-модели в день</li>' +
+    '<li>' + fm.img + ' изображения в месяц</li>' +
+    '<li>' + fm.music + ' музыкальный трек в месяц</li>' +
+    '<li>' + fm.video + ' видео в месяц</li>' +
+    '<li>Ежедневный бонус ✵ в боте</li>' +
+    '<li class="no">Безлимитных PRO-моделей нет</li></ul>' +
+    (L.has_sub ? '' : '<button class="planbtn ghost" disabled>Ваш текущий тариф</button>') + '</div>';
+  (L.plans || []).forEach((p, i) => {
+    const hot = i === 1;
+    h += '<div class="card plan"' + (hot ? ' style="border-color:var(--accent)"' : '') + '>' +
+      (hot ? '<span class="badge">ПОПУЛЯРНЫЙ</span>' : '') +
+      '<h3>' + esc(p.name) + '</h3>' +
+      '<div class="price">' + p.price + ' ₽ <small>/ ' + p.days + ' дн.</small></div><ul>' +
+      '<li>' + p.credits + ' ✵ хузапоинтов сразу</li>' +
+      '<li>+' + p.daily_credits + ' ✵ каждый день</li>' +
+      '<li>Все PRO-модели без ограничений</li>' +
+      '<li>Фото, музыка и видео за ✵</li>' +
+      '<li>Приоритетная очередь</li></ul>' +
+      '<button class="planbtn' + (hot ? '' : ' ghost') + '" onclick="openBot()">Оформить в боте</button></div>';
+  });
+  w.innerHTML = h;
+}
+
+/* ── profile ── */
+function lim(t, used, mx){
+  const u = used || 0, m = mx || 0, pct = m > 0 ? Math.min(100, Math.round(u / m * 100)) : 0;
+  return '<div class="limitrow"><div class="t"><span>' + t + '</span><span>' + u + ' / ' + m + '</span></div>' +
+    '<div class="bar"><i style="width:' + pct + '%"></i></div></div>';
+}
+function renderProfile(){
+  const L = S.limits, w = $('profileWrap'); if (!L || !w) return;
+  const nm = (L.first_name || 'Пользователь').trim() || 'Пользователь';
+  const fm = L.free_month || { img: 2, music: 1, video: 1 };
+  let h = '<div class="card pcard"><div class="avatar">' + esc(nm[0].toUpperCase()) + '</div><div>' +
+    '<div style="font-weight:800;font-size:16px">' + esc(nm) + '</div>' +
+    '<div style="color:var(--muted);font-size:12.5px">' +
+    (L.has_sub ? '⭐ Подписка «' + esc(L.sub_plan || 'PRO') + '»' + (L.sub_expires ? ' до ' + esc(L.sub_expires) : '') : 'Бесплатный тариф') +
+    (L.level ? ' · ' + esc(L.level) : '') + '</div></div></div>';
+  h += '<div class="card"><div class="stats">' +
+    '<div class="stat"><div class="v">✵ ' + (L.credits != null ? L.credits : 0) + '</div><div class="k">хузапоинты</div></div>' +
+    '<div class="stat"><div class="v">🔥 ' + (L.streak_days || 0) + '</div><div class="k">дней подряд</div></div>' +
+    '<div class="stat"><div class="v">👥 ' + (L.referrals || 0) + '</div><div class="k">приглашено</div></div>' +
+    '<div class="stat"><div class="v">' + (L.has_sub ? '∞' : ((L.pro_max || 0) - (L.pro_used || 0))) + '</div><div class="k">PRO-проб сегодня</div></div>' +
+    '</div></div>';
+  if (!L.has_sub && !L.is_admin){
+    h += '<div class="card"><h3>Бесплатные генерации в этом месяце</h3>' +
+      lim('🖼 Изображения', fm.img - (L.free_img_left || 0), fm.img) +
+      lim('🎵 Музыка', fm.music - (L.free_music_left || 0), fm.music) +
+      lim('🎬 Видео', fm.video - (L.free_video_left || 0), fm.video) +
+      (L.reset_in ? '<div style="color:var(--muted);font-size:12px;margin-top:10px">Сброс лимитов: ' + esc(L.reset_in) + '</div>' : '') + '</div>';
+    h += '<div class="card" style="background:var(--grad);border:none;color:#fff"><h3 style="color:#fff">Хотите больше?</h3>' +
+      '<div style="font-size:13px;opacity:.9;margin-top:4px">Подписка открывает все PRO-модели и даёт ✵ каждый день</div>' +
+      '<button class="planbtn" style="background:#fff;color:var(--accent);margin-top:12px" onclick="go(\'plans\')">Смотреть тарифы</button></div>';
+  }
+  h += '<div class="card"><h3>Ежедневный бонус</h3>' +
+    '<div class="sub">Каждый день в боте можно забрать бесплатные ✵ хузапоинты</div>' +
+    '<button class="planbtn ghost" style="margin-top:12px" onclick="openBot()">Открыть бота</button></div>';
+  w.innerHTML = h;
+}
+
+/* ── init ── */
+const inputEl = $('input');
+inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px'; });
+inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+if (tg){
+  tg.ready(); tg.expand();
+  try{ tg.onEvent('themeChanged', applyTheme); }catch(e){}
+  try{ tg.disableVerticalSwipes && tg.disableVerticalSwipes(); }catch(e){}
+}
+applyTheme();
+fetchLimits();
+setInterval(() => { if (!S.busy) fetchLimits(); }, 90000);
+</script>
+</body>
+</html>
