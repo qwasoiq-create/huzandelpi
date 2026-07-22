@@ -249,6 +249,23 @@ textarea.finput:focus{border-color:color-mix(in srgb,var(--accent) 45%,transpare
 #webBtn.on{color:var(--accent);background:rgba(141,132,240,.16)}
 html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
 .msg pre{cursor:pointer}
+/* v3: стриминг, формулы, таблицы, меню */
+.sendbtn.stop{background:#d9534f;color:#fff}
+.scursor{display:inline-block;width:8px;height:14px;margin-left:3px;border-radius:2px;background:var(--accent);vertical-align:-2px;animation:hzblink 1s steps(1) infinite}
+@keyframes hzblink{50%{opacity:0}}
+.tblwrap{overflow-x:auto;max-width:100%;margin:8px 0}
+table.mdt{border-collapse:collapse;font-size:13.5px}
+.mdt th,.mdt td{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top}
+.mdt th{background:var(--panel2);font-weight:600}
+.mathblock{margin:8px 0;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;overflow-x:auto;font-size:15px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;font-size:.85em;line-height:1.2;margin:0 2px}
+.frac span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.msg.user .msgactions{justify-content:flex-end}
+.hsearch{padding:2px 0 10px}
+.hsearch input{width:100%;box-sizing:border-box;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.actrow{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;font-size:14.5px;font-weight:500;cursor:pointer}
+.actrow svg{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
+.actrow.danger,.actrow.danger svg{color:#e05a55}
 </style>
 </head>
 <body>
@@ -260,6 +277,7 @@ html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
     <div class="top-actions">
       <button class="topicon" title="Новый чат" onclick="newChat()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button class="topicon" title="История" onclick="openHistory()"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>
+      <button class="topicon" title="Действия с чатом" onclick="openChatMenu()"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
       <div class="pill" id="subPill" onclick="go('plans')" style="display:none">Free</div>
       <div class="pill" id="creditsPill" onclick="go('plans')"><span class="star"><svg viewBox="0 0 24 24"><path d="M12 4.5v15M5.5 8.25l13 7.5M18.5 8.25l-13 7.5"/></svg></span><span id="creditsVal">…</span></div>
     </div>
@@ -381,7 +399,7 @@ html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg>
         </button>
         <button class="modelbtn" id="modelBtn" onclick="openSheet('modelSheet')"><span class="dot"></span><span id="modelBtnName">Модель</span></button>
-        <button class="sendbtn" id="sendBtn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        <button class="sendbtn" id="sendBtn" onclick="S.busy?stopGen():sendChat()"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
     </div>
   </div>
@@ -399,6 +417,7 @@ html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
   <div class="sheet historysheet" id="historySheet">
     <div class="grip"></div>
     <div class="shead"><span>История чатов</span><button class="headnew" onclick="newChat();closeSheets()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Новый чат</button></div>
+    <div class="hsearch"><input id="histSearch" type="search" placeholder="Поиск по чатам…" oninput="renderHistory(this.value)"></div>
     <div class="sbody" id="historyList"></div>
   </div>
   <div class="sheet" id="modelSheet">
@@ -412,6 +431,25 @@ html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
     <div class="sbody" id="paywallBody"></div>
   </div>
 
+  <div class="sheet" id="msgSheet">
+    <div class="grip"></div>
+    <div class="shead">Действия с ответом</div>
+    <div class="sbody">
+      <div class="actrow" onclick="msgMenuAct('share')"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.2 10.8l7-4M8.2 13.2l7 4"/></svg>Поделиться ответом</div>
+      <div class="actrow" onclick="msgMenuAct('copy')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h3"/></svg>Копировать текст</div>
+      <div class="actrow" onclick="msgMenuAct('speak')"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.4 5.6a9 9 0 010 12.8"/></svg>Озвучить</div>
+      <div class="actrow" onclick="msgMenuAct('retry')"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9a7 7 0 0111.5-2L20 12M4 12l2.4 5a7 7 0 0011.5-2"/></svg>Сгенерировать заново</div>
+    </div>
+  </div>
+  <div class="sheet" id="chatSheet">
+    <div class="grip"></div>
+    <div class="shead">Действия с диалогом</div>
+    <div class="sbody">
+      <div class="actrow" onclick="shareDialog()"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.2 10.8l7-4M8.2 13.2l7 4"/></svg>Поделиться диалогом</div>
+      <div class="actrow" onclick="exportPdf()"><svg viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Экспорт в PDF</div>
+      <div class="actrow danger" onclick="deleteCurrentChat()"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg>Удалить диалог</div>
+    </div>
+  </div>
   <div id="toast"></div>
 </div>
 <script>
@@ -706,13 +744,18 @@ function newChat(){
   go('chat'); renderHistory(); haptic('success');
 }
 function openHistory(){ renderHistory(); openSheet('historySheet'); }
-function renderHistory(){
+function renderHistory(q){
   const box = $('historyList'); if (!box) return;
   if (!S.chats.length){
     box.innerHTML = '<div class="history-empty"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><b style="display:block;color:var(--text)">История пока пуста</b><span style="font-size:12px">Начните диалог — он сохранится автоматически</span></div>'; return;
   }
-  const today = new Date().toDateString(); let h = '<div class="section-title">Последние диалоги</div>';
-  h += S.chats.map(c => {
+  const query = String(q !== undefined ? q : ($('histSearch') ? $('histSearch').value : '')).trim().toLowerCase();
+  const list = query ? S.chats.filter(function(c){ return (c.title + ' ' + (c.messages || []).map(function(m){ return m.content; }).join(' ')).toLowerCase().indexOf(query) !== -1; }) : S.chats;
+  if (!list.length){
+    box.innerHTML = '<div class="history-empty"><b style="display:block;color:var(--text)">Ничего не найдено</b><span style="font-size:12px">Попробуйте другой запрос</span></div>'; return;
+  }
+  const today = new Date().toDateString(); let h = '<div class="section-title">' + (query ? 'Найдено: ' + list.length : 'Последние диалоги') + '</div>';
+  h += list.map(c => {
     const d = new Date(c.updated), when = d.toDateString() === today ? d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('ru',{day:'numeric',month:'short'});
     return '<div class="chatrow' + (c.id===S.currentChatId?' on':'') + '" onclick="openChat(\''+c.id+'\')"><div class="cicon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="ctxt"><div class="ctitle">'+esc(c.title)+'</div><div class="cmeta">'+when+' · '+Math.ceil((c.messages||[]).length/2)+' сообщений</div></div><button class="chatdel" onclick="event.stopPropagation();deleteChat(\''+c.id+'\')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></svg></button></div>';
   }).join(''); box.innerHTML = h;
@@ -741,23 +784,57 @@ function retryLast(){
 }
 
 /* ── chat ── */
+const TEXSYM = [["\\circ","°"],["\\times","×"],["\\cdot","·"],["\\pm","±"],["\\leq","≤"],["\\le","≤"],["\\geq","≥"],["\\ge","≥"],["\\neq","≠"],["\\ne","≠"],["\\approx","≈"],["\\sim","~"],["\\infty","∞"],["\\pi","π"],["\\alpha","α"],["\\beta","β"],["\\gamma","γ"],["\\delta","δ"],["\\Delta","Δ"],["\\lambda","λ"],["\\mu","μ"],["\\sigma","σ"],["\\omega","ω"],["\\Omega","Ω"],["\\theta","θ"],["\\phi","φ"],["\\sum","Σ"],["\\int","∫"],["\\rightarrow","→"],["\\to","→"],["\\leftarrow","←"],["\\deg","°"],["\\%","%"]];
+function tex2html(f){
+  let x = String(f);
+  x = x.replace(/\\text\{([^{}]*)\}/g, '$1').replace(/\\mathrm\{([^{}]*)\}/g, '$1').replace(/\\mathbf\{([^{}]*)\}/g, '<b>$1</b>');
+  x = x.replace(/\\sqrt\{([^{}]*)\}/g, '√($1)');
+  for (const p of TEXSYM) x = x.split(p[0]).join(p[1]);
+  for (let k = 0; k < 3; k++) x = x.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '<span class="frac"><span>$1</span><span>$2</span></span>');
+  x = x.replace(/\^\{([^{}]*)\}/g, '<sup>$1</sup>').replace(/\^([^\s{}<>&])/g, '<sup>$1</sup>');
+  x = x.replace(/_\{([^{}]*)\}/g, '<sub>$1</sub>').replace(/_([^\s{}<>&])/g, '<sub>$1</sub>');
+  x = x.replace(/\\[a-zA-Z]+/g, ' ').replace(/[{}]/g, '');
+  return x.trim();
+}
+function mdTables(h){
+  const lines = h.split('\n'); const out = []; let i = 0;
+  while (i < lines.length){
+    if (lines[i].indexOf('|') !== -1 && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i+1]) && lines[i+1].indexOf('-') !== -1){
+      const cells = r => r.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(c => c.trim());
+      let t = '<div class="tblwrap"><table class="mdt"><thead><tr>' + cells(lines[i]).map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>';
+      let j = i + 2;
+      while (j < lines.length && lines[j].indexOf('|') !== -1 && lines[j].trim()){ t += '<tr>' + cells(lines[j]).map(c => '<td>' + c + '</td>').join('') + '</tr>'; j++; }
+      t += '</tbody></table></div>';
+      out.push(t); i = j;
+    } else { out.push(lines[i]); i++; }
+  }
+  return out.join('\n');
+}
 function md(t){
+  const codes = [];
   let h = esc(t);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (a, l, c) => '<pre><code>' + c + '</code></pre>');
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (a, l, c) => { codes.push('<pre><code>' + c + '</code></pre>'); return '\u0000' + (codes.length - 1) + '\u0000'; });
   h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  h = h.replace(/\$\$([\s\S]+?)\$\$/g, (a, f) => '<div class="mathblock">' + tex2html(f) + '</div>');
+  h = h.replace(/\\\[([\s\S]+?)\\\]/g, (a, f) => '<div class="mathblock">' + tex2html(f) + '</div>');
+  h = h.replace(/\\\(([\s\S]+?)\\\)/g, (a, f) => '<span class="math">' + tex2html(f) + '</span>');
+  h = h.replace(/\$([^$\n]+?)\$/g, (a, f) => /[\\^_]/.test(f) ? '<span class="math">' + tex2html(f) + '</span>' : a);
+  h = mdTables(h);
   h = h.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
   h = h.replace(/(^|\n)### ([^\n]+)/g, '$1<b>$2</b>');
   h = h.replace(/(^|\n)## ([^\n]+)/g, '$1<b>$2</b>');
   h = h.replace(/(^|\n)# ([^\n]+)/g, '$1<b>$2</b>');
   h = h.replace(/\n/g, '<br>');
+  h = h.replace(/\u0000(\d+)\u0000/g, (a, i) => codes[+i]);
   return h;
 }
 function addMsg(role, html, label, persist, rawText){
   $('hero').style.display = 'none';
   const d = document.createElement('div');
   d.className = 'msg ' + role;
-  const actions = role === 'bot' && rawText ? '<div class="msgactions"><button class="msgact" title="Копировать" onclick="copyAnswer(unpackText(\'' + packText(rawText) + '\'))"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h3"/></svg></button><button class="msgact" title="Повторить" onclick="retryLast()"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9a7 7 0 0111.5-2L20 12M4 12l2.4 5a7 7 0 0011.5-2"/></svg></button></div>' : '';
+  const actions = role === 'bot' ? botActions(rawText) : userActions(rawText);
   d.innerHTML = (label ? '<div class="mlabel">' + esc(label) + '</div>' : '') + html + actions;
+  if (role === 'bot' && rawText) d.dataset.raw = packText(rawText);
   $('msgs').appendChild(d);
   if (persist !== false && rawText) persistMessage(role, rawText, label);
   const pg = $('page-chat'); pg.scrollTop = pg.scrollHeight;
@@ -795,6 +872,129 @@ function toggleWeb(){
   haptic('success');
 }
 function imgStyle(t){ const p = $('imgPrompt'); const v = p.value.replace(/\s+$/, ''); p.value = (v ? v + ', ' : '') + t; p.focus(); }
+/* стриминг, стоп, шаринг, экспорт, редактирование */
+let GEN_ABORT = null;
+function setSendMode(streaming){
+  const b = $('sendBtn'); if (!b) return;
+  b.classList.toggle('stop', !!streaming);
+  b.innerHTML = streaming
+    ? '<svg viewBox="0 0 24 24"><rect x="7.5" y="7.5" width="9" height="9" rx="2" fill="currentColor" stroke="none"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+}
+function stopGen(){ try{ if (GEN_ABORT) GEN_ABORT.abort(); }catch(e){} }
+function botActions(rawText){
+  if (!rawText) return '';
+  const p = packText(rawText);
+  return '<div class="msgactions">'
+    + '<button class="msgact" title="Копировать" onclick="copyAnswer(unpackText(\'' + p + '\'))"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h3"/></svg></button>'
+    + '<button class="msgact" title="Поделиться" onclick="shareAnswer(unpackText(\'' + p + '\'))"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.2 10.8l7-4M8.2 13.2l7 4"/></svg></button>'
+    + '<button class="msgact" title="Повторить" onclick="retryLast()"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9a7 7 0 0111.5-2L20 12M4 12l2.4 5a7 7 0 0011.5-2"/></svg></button>'
+    + '<button class="msgact" title="Ещё" onclick="openMsgMenuBtn(this)"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>'
+    + '</div>';
+}
+function userActions(rawText){
+  if (!rawText) return '';
+  return '<div class="msgactions"><button class="msgact" title="Редактировать" data-t="' + packText(rawText) + '" onclick="editMsg(this)"><svg viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 00-3-3L5 17z"/><path d="M13.5 6.5l3 3"/></svg></button></div>';
+}
+function finishBotMsg(el, answer, mlabel){
+  el.innerHTML = '<div class="mlabel">' + esc(mlabel) + '</div>' + md(answer) + botActions(answer);
+  el.dataset.raw = packText(answer);
+}
+function shareAnswer(text){
+  const t = String(text || '').slice(0, 3800);
+  if (!t){ toast('Нечего отправлять'); return; }
+  try{
+    if (tg && tg.openTelegramLink){
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(BOT_LINK) + '&text=' + encodeURIComponent(t));
+      return;
+    }
+  }catch(e){}
+  if (navigator.share){ navigator.share({ text: t }).catch(function(){}); return; }
+  copyAnswer(t);
+}
+function shareDialog(){
+  closeSheets();
+  const c = activeChat();
+  if (!c || !(c.messages || []).length){ toast('Диалог пуст'); return; }
+  const txt = c.messages.map(m => (m.role === 'user' ? 'Вы: ' : 'ХУЗА AI: ') + m.content).join('\n\n');
+  shareAnswer(txt);
+}
+async function exportPdf(){
+  closeSheets();
+  const c = activeChat();
+  if (!c || !(c.messages || []).length){ toast('Диалог пуст — нечего экспортировать'); return; }
+  if (S.demo){ toast('Экспорт доступен только внутри Telegram'); return; }
+  toast('Готовлю PDF…');
+  try{
+    const headers = { 'Content-Type': 'application/json' };
+    if (initData()) headers['X-Telegram-Init-Data'] = initData();
+    const msgs = c.messages.map(m => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.content }));
+    const res = await fetch(API_BASE + '/api/export', { method: 'POST', headers, body: JSON.stringify({ init_data: initData(), session_id: c.id, messages: msgs }) });
+    const ct = res.headers.get('Content-Type') || '';
+    if (res.ok && ct.indexOf('pdf') !== -1){
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'huza-chat.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+      toast('PDF сохранён');
+    } else {
+      let j = {}; try{ j = await res.json(); }catch(e){}
+      toast(errText(j.error, res.status));
+    }
+  }catch(e){ toast('Не удалось выгрузить PDF'); }
+}
+function openChatMenu(){
+  const c = activeChat();
+  if (!c || !(c.messages || []).length){ toast('Диалог пуст — сначала напишите сообщение'); return; }
+  openSheet('chatSheet');
+}
+function deleteCurrentChat(){ closeSheets(); if (S.currentChatId) deleteChat(S.currentChatId); }
+function openMsgMenu(el){ S._menuMsg = el; openSheet('msgSheet'); }
+function openMsgMenuBtn(btn){ const m = btn.closest('.msg'); if (m) openMsgMenu(m); }
+function msgMenuAct(kind){
+  const m = S._menuMsg; closeSheets(); if (!m) return;
+  const raw = unpackText(m.dataset.raw || '');
+  if (kind === 'copy') copyAnswer(raw);
+  else if (kind === 'share') shareAnswer(raw);
+  else if (kind === 'retry') retryLast();
+  else if (kind === 'speak'){
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(raw.replace(/[*#`|]/g, '').slice(0, 1200));
+      u.lang = 'ru-RU';
+      window.speechSynthesis.speak(u);
+      toast('Озвучиваю…');
+    }catch(e){ toast('Озвучка недоступна на этом устройстве'); }
+  }
+}
+function editMsg(btn){
+  if (S.busy){ toast('Дождитесь окончания генерации'); return; }
+  const d = btn.closest('.msg'); if (!d) return;
+  const raw = unpackText(btn.getAttribute('data-t') || '');
+  const c = activeChat();
+  if (c){
+    const userMsgs = Array.prototype.slice.call($('msgs').querySelectorAll('.msg.user'));
+    const uidx = userMsgs.indexOf(d);
+    let seen = -1, cut = -1;
+    for (let i = 0; i < c.messages.length; i++){
+      if (c.messages[i].role === 'user'){ seen++; if (seen === uidx){ cut = i; break; } }
+    }
+    if (cut >= 0){
+      c.messages = c.messages.slice(0, cut);
+      c.apiHistory = c.messages.map(m => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.content })).slice(-16);
+      S.history = c.apiHistory.slice();
+      c.updated = Date.now(); saveChats(); renderHistory();
+    }
+  }
+  let n = d;
+  while (n){ const nx = n.nextElementSibling; n.remove(); n = nx; }
+  if (!$('msgs').children.length) $('hero').style.display = '';
+  const inp = $('input');
+  inp.value = raw; inp.dispatchEvent(new Event('input')); inp.focus();
+  toast('Отредактируйте и отправьте заново');
+}
 async function sendChat(){
   if (S.busy) return;
   const inp = $('input'), text = inp.value.trim();
@@ -802,34 +1002,92 @@ async function sendChat(){
   if (S.demo){ toast('Демо-режим: откройте через Telegram'); return; }
   if (!S.limits){ toast('Подключаемся к серверу…'); fetchLimits(); return; }
   const m = curModel(); if (!m){ toast('Нет доступных моделей — попробуйте позже'); fetchLimits(true); return; }
-  S.busy = true; $('sendBtn').disabled = true;
+  S.busy = true; setSendMode(true);
   const img = S.attach;
   addMsg('user', md(text) + (img ? '<img src="data:image/jpeg;base64,' + img + '">' : ''), '', true, text);
   inp.value = ''; inp.style.height = 'auto'; clearAttach();
   const wait = addMsg('bot', '<div class="typing"><i></i><i></i><i></i></div>', '', false, '');
-  let failed = false;
+  let failed = false, answer = '', mlabel = m.label, aborted = false;
+  GEN_ABORT = new AbortController();
   try{
-    const body = { text: text, model: S.model, answer_mode: 'everyday', web_search: WEB_ON, history: S.history.slice(0,-1).slice(-8) };
+    const body = { init_data: initData(), text: text, model: S.model, answer_mode: 'everyday', web_search: WEB_ON, stream: true, history: S.history.slice(0,-1).slice(-8) };
     if (img) body.images = [img];
-    const j = await api('/api/chat', { method: 'POST', body });
-    if (j.ok){
-      const answer = j.answer || '';
-      const mlabel = j.model_label || j.model || m.label;
-      wait.innerHTML = '<div class="mlabel">' + esc(mlabel) + '</div>' + md(answer) + '<div class="msgactions"><button class="msgact" title="Копировать" onclick="copyAnswer(unpackText(\'' + packText(answer) + '\'))"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h3"/></svg></button><button class="msgact" title="Повторить" onclick="retryLast()"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9a7 7 0 0111.5-2L20 12M4 12l2.4 5a7 7 0 0011.5-2"/></svg></button></div>';
-      persistMessage('bot', answer, mlabel);
-      haptic('success');
+    const headers = { 'Content-Type': 'application/json' };
+    if (initData()) headers['X-Telegram-Init-Data'] = initData();
+    const res = await fetch(API_BASE + '/api/chat', { method: 'POST', headers, body: JSON.stringify(body), signal: GEN_ABORT.signal });
+    const ctype = res.headers.get('Content-Type') || '';
+    if (res.ok && ctype.indexOf('text/event-stream') !== -1 && res.body && res.body.getReader){
+      wait.innerHTML = '<div class="mlabel">' + esc(mlabel) + '</div><span class="stream"></span><span class="scursor"></span>';
+      const target = wait.querySelector('.stream');
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      try{
+        for (;;){
+          const r = await reader.read();
+          if (r.done) break;
+          buf += dec.decode(r.value, { stream: true });
+          const parts = buf.split('\n\n'); buf = parts.pop();
+          for (const p of parts){
+            const line = p.trim();
+            if (line.indexOf('data:') !== 0) continue;
+            const payload = line.slice(5).trim();
+            if (payload === '[DONE]') continue;
+            try{
+              const ev = JSON.parse(payload);
+              const dl = ev.choices && ev.choices[0] && ev.choices[0].delta ? ev.choices[0].delta.content : '';
+              if (dl){
+                answer += dl;
+                target.innerHTML = md(answer);
+                const pg = $('page-chat'); pg.scrollTop = pg.scrollHeight;
+              }
+            }catch(e){}
+          }
+        }
+      }catch(e){
+        if (GEN_ABORT.signal.aborted) aborted = true; else throw e;
+      }
+      if (answer){
+        finishBotMsg(wait, answer, mlabel);
+        persistMessage('bot', answer, mlabel);
+        haptic('success');
+        if (aborted) toast('Генерация остановлена');
+      } else if (aborted){
+        wait.remove(); toast('Генерация остановлена');
+      } else {
+        failed = true; wait.remove(); toast('Пустой ответ — попробуйте ещё раз');
+      }
     } else {
-      failed = true; wait.remove();
-      const code = j.error, st = j.__status;
-      if (code === 'premium_required'){ openPaywall('Нужна подписка', 'Лимит бесплатных обращений к PRO-моделям на сегодня исчерпан.'); }
-      else if (code === 'limit_exceeded'){ openPaywall('Лимит исчерпан', 'Дневной лимит сообщений закончился. С подпиской лимиты заметно выше.'); }
-      else if (st === 403 && curModel() && curModel().premium && !S.limits.has_sub){ openPaywall('Нужна подписка', 'PRO-модель недоступна: лимит проб на сегодня исчерпан или требуется подписка.'); }
-      else toast(errText(code, st));
-      haptic('error');
+      let j = {}; try{ j = await res.json(); }catch(e){}
+      const st = res.status;
+      if (j.ok){
+        answer = j.answer || '';
+        mlabel = j.model_label || j.model || m.label;
+        finishBotMsg(wait, answer, mlabel);
+        persistMessage('bot', answer, mlabel);
+        haptic('success');
+      } else {
+        failed = true; wait.remove();
+        const code = j.error;
+        if (code === 'premium_required'){ openPaywall('Нужна подписка', 'Лимит бесплатных обращений к PRO-моделям на сегодня исчерпан.'); }
+        else if (code === 'limit_exceeded'){ openPaywall('Лимит исчерпан', 'Дневной лимит сообщений закончился. С подпиской лимиты заметно выше.'); }
+        else if (st === 403 && curModel() && curModel().premium && !S.limits.has_sub){ openPaywall('Нужна подписка', 'PRO-модель недоступна: лимит проб на сегодня исчерпан или требуется подписка.'); }
+        else toast(errText(code, st));
+        haptic('error');
+      }
     }
-  }catch(e){ failed = true; wait.remove(); toast('Нет связи с сервером — сообщение не отправлено'); }
+  }catch(e){
+    if (GEN_ABORT && GEN_ABORT.signal.aborted){
+      if (answer){ finishBotMsg(wait, answer, mlabel); persistMessage('bot', answer, mlabel); }
+      else wait.remove();
+      toast('Генерация остановлена');
+    } else {
+      failed = true; wait.remove(); toast('Нет связи с сервером — сообщение не отправлено');
+    }
+  }
+  GEN_ABORT = null;
   if (failed && !inp.value){ inp.value = text; inp.dispatchEvent(new Event('input')); }
-  S.busy = false; $('sendBtn').disabled = false;
+  S.busy = false; setSendMode(false);
   fetchLimitsSoft();
 }
 let limT = null;
@@ -1039,6 +1297,15 @@ syncWebBtn();
 $('msgs').addEventListener('click', function(e){
   const pre = e.target.closest('pre');
   if (pre && $('msgs').contains(pre)) copyAnswer(pre.innerText);
+});
+let _lpT = null;
+$('msgs').addEventListener('touchstart', function(e){
+  const b = e.target.closest('.msg.bot');
+  if (!b || !b.dataset.raw) return;
+  _lpT = setTimeout(function(){ haptic('success'); openMsgMenu(b); }, 550);
+}, { passive: true });
+['touchmove','touchend','touchcancel'].forEach(function(ev){
+  $('msgs').addEventListener(ev, function(){ clearTimeout(_lpT); }, { passive: true });
 });
 const inputEl = $('input');
 inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px'; });
