@@ -246,6 +246,9 @@ textarea.finput:focus{border-color:color-mix(in srgb,var(--accent) 45%,transpare
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;animation-iteration-count:1 !important}
 }
+#webBtn.on{color:var(--accent);background:rgba(141,132,240,.16)}
+html[data-theme="light"] #webBtn.on{background:rgba(91,81,221,.12)}
+.msg pre{cursor:pointer}
 </style>
 </head>
 <body>
@@ -299,6 +302,14 @@ textarea.finput:focus{border-color:color-mix(in srgb,var(--accent) 45%,transpare
           <div class="sub">Опишите, что хотите увидеть — чем подробнее, тем лучше</div>
           <label class="flabel">Промпт</label>
           <textarea class="finput" id="imgPrompt" rows="3" placeholder="Например: кот в скафандре на Луне, кинематографичный свет"></textarea>
+          <label class="flabel">Стиль</label>
+          <div class="optrow">
+            <div class="opt" onclick="imgStyle('фотореализм, высокая детализация')">Фотореализм</div>
+            <div class="opt" onclick="imgStyle('аниме-стиль')">Аниме</div>
+            <div class="opt" onclick="imgStyle('3D-рендер')">3D</div>
+            <div class="opt" onclick="imgStyle('акварельная иллюстрация')">Акварель</div>
+            <div class="opt" onclick="imgStyle('киберпанк, неоновый свет')">Киберпанк</div>
+          </div>
           <label class="flabel">Модель</label>
           <div class="optrow" id="imgModels"></div>
           <label class="flabel">Формат</label>
@@ -366,6 +377,9 @@ textarea.finput:focus{border-color:color-mix(in srgb,var(--accent) 45%,transpare
         </button>
         <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFile(this)">
         <textarea id="input" rows="1" placeholder="Спросите что-нибудь…"></textarea>
+        <button class="iconbtn" id="webBtn" title="Веб-поиск" onclick="toggleWeb()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg>
+        </button>
         <button class="modelbtn" id="modelBtn" onclick="openSheet('modelSheet')"><span class="dot"></span><span id="modelBtnName">Модель</span></button>
         <button class="sendbtn" id="sendBtn" onclick="sendChat()"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       </div>
@@ -770,6 +784,17 @@ function onFile(inp){
 }
 function clearAttach(){ S.attach = null; $('attachPreview').style.display = 'none'; $('attachPreview').innerHTML = ''; }
 
+/* ── web search toggle ── */
+let WEB_ON = localStorage.getItem('huza_web') === '1';
+function syncWebBtn(){ const b = $('webBtn'); if (b) b.classList.toggle('on', WEB_ON); }
+function toggleWeb(){
+  WEB_ON = !WEB_ON;
+  localStorage.setItem('huza_web', WEB_ON ? '1' : '0');
+  syncWebBtn();
+  toast(WEB_ON ? 'Веб-поиск включён — ответы будут с данными из интернета' : 'Веб-поиск выключен');
+  haptic('success');
+}
+function imgStyle(t){ const p = $('imgPrompt'); const v = p.value.replace(/\s+$/, ''); p.value = (v ? v + ', ' : '') + t; p.focus(); }
 async function sendChat(){
   if (S.busy) return;
   const inp = $('input'), text = inp.value.trim();
@@ -784,7 +809,7 @@ async function sendChat(){
   const wait = addMsg('bot', '<div class="typing"><i></i><i></i><i></i></div>', '', false, '');
   let failed = false;
   try{
-    const body = { text: text, model: S.model, answer_mode: 'everyday', history: S.history.slice(0,-1).slice(-8) };
+    const body = { text: text, model: S.model, answer_mode: 'everyday', web_search: WEB_ON, history: S.history.slice(0,-1).slice(-8) };
     if (img) body.images = [img];
     const j = await api('/api/chat', { method: 'POST', body });
     if (j.ok){
@@ -1010,6 +1035,11 @@ function renderProfile(){
 }
 
 /* ── init ── */
+syncWebBtn();
+$('msgs').addEventListener('click', function(e){
+  const pre = e.target.closest('pre');
+  if (pre && $('msgs').contains(pre)) copyAnswer(pre.innerText);
+});
 const inputEl = $('input');
 inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px'; });
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
