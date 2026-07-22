@@ -284,6 +284,8 @@ table.mdt{border-collapse:collapse;font-size:13.5px}
 .tagcur{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700}
 .pinbtn.on{color:var(--accent)}
 .custombox{width:100%;box-sizing:border-box;margin-top:10px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;min-height:70px}
+.sheet{visibility:hidden;pointer-events:none;transition:transform .26s cubic-bezier(.32,.72,.33,1),visibility 0s .26s}
+.sheet.show{visibility:visible;pointer-events:auto;transition:transform .26s cubic-bezier(.32,.72,.33,1),visibility 0s 0s}
 </style>
 </head>
 <body>
@@ -478,7 +480,7 @@ table.mdt{border-collapse:collapse;font-size:13.5px}
 "use strict";
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 const API_BASE = window.HUZA_API_BASE || ((location.hostname.endsWith('.github.io') || location.protocol === 'file:') ? 'https://bot.huzandelpi.ru' : '');
-const BOT_LINK = 'https://t.me/huza_ai_bot';
+const BOT_LINK = 'https://t.me/iihuzandelpiibot';
 
 const S = {
   demo: false, limits: null, model: localStorage.getItem('huza_model') || '',
@@ -1407,6 +1409,7 @@ _pgc.addEventListener('scroll', function(){
 if (!(window.SpeechRecognition || window.webkitSpeechRecognition)){ const _mb = $('micBtn'); if (_mb) _mb.style.display = 'none'; }
 const inputEl = $('input');
 inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px'; });
+inputEl.addEventListener('focus', () => closeSheets());
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
 if (tg){
   tg.ready(); tg.expand();
