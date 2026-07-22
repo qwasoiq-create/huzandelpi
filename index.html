@@ -27,7 +27,7 @@ body{
   font-size:15px; line-height:1.55;
 }
 #app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:760px;margin:0 auto;position:relative}
-
+​
 /* ── header ── */
 .top{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;flex:0 0 auto;min-width:0}
 .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;letter-spacing:.2px;min-width:0;overflow:hidden}
@@ -39,18 +39,18 @@ body{
 .pill .star{color:#f7b731}
 .pill.sub-on{background:var(--grad);color:#fff;border:none}
 @media(max-width:400px){#subPill{display:none !important}}
-
+​
 /* ── pages ── */
 .page{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding-bottom:calc(var(--nav-h) + 18px)}
 .page.active{display:block}
 .pagepad{padding:4px 16px 0}
-
+​
 /* ── bottom nav ── */
 .nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--border);z-index:40}
 .nav button{flex:1;background:none;border:none;color:var(--muted);font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-family:inherit}
 .nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav button.on{color:var(--accent)}
-
+​
 /* ── chat ── */
 #chatScroll{display:flex;flex-direction:column;min-height:100%}
 .hero{text-align:center;padding:46px 24px 22px}
@@ -74,7 +74,7 @@ body{
 .typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:tp 1.2s infinite}
 .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
 @keyframes tp{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
-
+​
 /* ── composer ── */
 .composer{position:absolute;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:8px 12px 10px;z-index:30;background:linear-gradient(to top,var(--bg) 70%,transparent)}
 .combox{background:var(--panel);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:10px 12px 8px}
@@ -93,7 +93,7 @@ body{
 .attachpreview .ap{position:relative}
 .attachpreview img{width:52px;height:52px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
 .attachpreview .x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--bad);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-
+​
 /* ── cards / studio ── */
 .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
 .card h3{font-size:15px;font-weight:750;display:flex;align-items:center;gap:8px}
@@ -122,7 +122,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .result .rcap{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 .dlbtn{font-size:12px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer;font-family:inherit}
 .progressnote{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;display:none}
-
+​
 /* ── plans ── */
 .plan{position:relative;overflow:hidden}
 .plan .price{font-size:26px;font-weight:800;letter-spacing:-.5px}
@@ -135,7 +135,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .plan .badge.gray{background:var(--panel2);color:var(--muted);border:1px solid var(--border)}
 .planbtn{width:100%;margin-top:14px;border:none;border-radius:13px;background:var(--grad);color:#fff;font-weight:750;font-size:14px;padding:12px;cursor:pointer;font-family:inherit}
 .planbtn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
-
+​
 /* ── profile ── */
 .pcard{display:flex;align-items:center;gap:14px}
 .avatar{width:54px;height:54px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
@@ -148,7 +148,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .limitrow{margin-top:13px}
 .limitrow .t{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
 .limitrow .t span:last-child{color:var(--muted)}
-
+​
 /* ── sheets ── */
 .overlay{position:absolute;inset:0;background:rgba(10,10,18,.45);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.22s;z-index:60}
 .overlay.show{opacity:1;pointer-events:auto}
@@ -169,7 +169,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .tagpro{font-size:9.5px;font-weight:800;background:var(--grad);color:#fff;padding:2px 7px;border-radius:99px;letter-spacing:.5px}
 .tagfree{font-size:9.5px;font-weight:800;background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good);padding:2px 7px;border-radius:99px;letter-spacing:.5px}
 .groupt{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:12px 10px 4px}
-
+​
 /* ── toast / banner ── */
 #toast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-90px);background:var(--panel);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:11px 16px;font-size:13.5px;font-weight:600;z-index:100;transition:.3s;max-width:88%;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
@@ -177,7 +177,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .demobanner.show{display:block}
 .skel{background:linear-gradient(90deg,var(--panel2) 25%,var(--panel) 50%,var(--panel2) 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:12px}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
+​
 /* ── premium chat v2 ── */
 .top{height:58px;padding:10px 14px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);z-index:35}
 .logo span{font-size:15px;letter-spacing:-.25px}.top-actions{display:flex;gap:6px;align-items:center;min-width:0}
@@ -206,7 +206,7 @@ textarea.finput:focus{border-color:var(--accent)}
 .shead .headnew{border:0;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent);border-radius:10px;padding:7px 10px;font-size:11.5px;font-weight:750;font-family:inherit;cursor:pointer}
 .historysheet{max-height:83%}.section-title{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;padding:7px 10px}
 @media(min-width:600px){.actionlist{max-width:520px;margin-left:auto;margin-right:auto}.hero{padding-top:48px}}
-
+​
 /* ── action list (ChatGPT-style) ── */
 .actionlist{display:flex;flex-direction:column;margin-top:20px;border-top:1px solid var(--border)}
 .actrow{display:flex;align-items:center;gap:13px;width:100%;padding:14px 6px;border:none;border-bottom:1px solid var(--border);background:none;color:var(--text);font-family:inherit;text-align:left;cursor:pointer}
@@ -217,13 +217,13 @@ textarea.finput:focus{border-color:var(--accent)}
 .actrow b{display:block;font-size:14px;font-weight:700;line-height:1.3}
 .actrow small{display:block;color:var(--muted);font-size:12px;margin-top:2px;line-height:1.3}
 .actrow .chev{color:var(--muted);font-size:18px;flex:0 0 auto}
-
-
+​
+​
 </style>
 </head>
 <body>
 <div id="app">
-
+​
   <div class="top">
     <div class="logo"><div class="orb"></div><span>ХУЗА AI</span></div>
     <div class="spacer"></div>
@@ -234,9 +234,9 @@ textarea.finput:focus{border-color:var(--accent)}
       <div class="pill" id="creditsPill" onclick="go('plans')"><span class="star">✵</span><span id="creditsVal">…</span></div>
     </div>
   </div>
-
+​
   <div class="demobanner" id="demoBanner">⚠️ Демо-режим — откройте мини-апп через Telegram, чтобы всё работало</div>
-
+​
   <!-- ЧАТ -->
   <div class="page active" id="page-chat">
     <div id="chatScroll">
@@ -256,7 +256,7 @@ textarea.finput:focus{border-color:var(--accent)}
       <div class="msgs" id="msgs"></div>
     </div>
   </div>
-
+​
   <!-- СТУДИЯ -->
   <div class="page" id="page-studio">
     <div class="pagepad">
@@ -265,7 +265,7 @@ textarea.finput:focus{border-color:var(--accent)}
         <button data-s="music" onclick="studioTab('music')">🎵 Музыка</button>
         <button data-s="video" onclick="studioTab('video')">🎬 Видео</button>
       </div>
-
+​
       <div id="studio-img">
         <div class="card">
           <h3>Генерация изображений</h3>
@@ -282,7 +282,7 @@ textarea.finput:focus{border-color:var(--accent)}
           <div class="result" id="imgResult"></div>
         </div>
       </div>
-
+​
       <div id="studio-music" style="display:none">
         <div class="card">
           <h3>Генерация музыки</h3>
@@ -297,7 +297,7 @@ textarea.finput:focus{border-color:var(--accent)}
           <div class="result" id="musicResult"></div>
         </div>
       </div>
-
+​
       <div id="studio-video" style="display:none">
         <div class="card">
           <h3>Генерация видео</h3>
@@ -318,17 +318,17 @@ textarea.finput:focus{border-color:var(--accent)}
       </div>
     </div>
   </div>
-
+​
   <!-- ТАРИФЫ -->
   <div class="page" id="page-plans">
     <div class="pagepad" id="plansWrap"></div>
   </div>
-
+​
   <!-- ПРОФИЛЬ -->
   <div class="page" id="page-profile">
     <div class="pagepad" id="profileWrap"></div>
   </div>
-
+​
   <!-- composer (только для чата) -->
   <div class="composer" id="composer">
     <div class="combox">
@@ -345,7 +345,7 @@ textarea.finput:focus{border-color:var(--accent)}
       </div>
     </div>
   </div>
-
+​
   <!-- nav -->
   <div class="nav">
     <button class="on" id="nav-chat" onclick="go('chat')"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Чат</button>
@@ -353,7 +353,7 @@ textarea.finput:focus{border-color:var(--accent)}
     <button id="nav-plans" onclick="go('plans')"><svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 6 3-6M12 21l-3-12M12 21l3-12"/></svg>Тарифы</button>
     <button id="nav-profile" onclick="go('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</button>
   </div>
-
+​
   <!-- sheets -->
   <div class="overlay" id="overlay" onclick="closeSheets()"></div>
   <div class="sheet historysheet" id="historySheet">
@@ -371,7 +371,7 @@ textarea.finput:focus{border-color:var(--accent)}
     <div class="shead" id="paywallTitle">Нужна подписка</div>
     <div class="sbody" id="paywallBody"></div>
   </div>
-
+​
   <div id="toast"></div>
 </div>
 <script>
@@ -379,7 +379,7 @@ textarea.finput:focus{border-color:var(--accent)}
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 const API_BASE = window.HUZA_API_BASE || ((location.hostname.endsWith('.github.io') || location.protocol === 'file:') ? 'https://bot.huzandelpi.ru' : '');
 const BOT_LINK = 'https://t.me/huza_ai_bot';
-
+​
 const S = {
   demo: false, limits: null, model: localStorage.getItem('huza_model') || '',
   history: [], busy: false, attach: null,
@@ -387,10 +387,10 @@ const S = {
   img: { model: '', ratio: '1:1' },
   video: { model: '', ratio: '16:9', dur: 8 },
 };
-
+​
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
+​
 const ERR = {
   rate_limit_exceeded: 'Слишком много запросов — подождите минуту',
   limit_exceeded: 'Лимит исчерпан — оформите подписку или подождите сброса',
@@ -421,21 +421,21 @@ function errText(code, status){
   if (status === 503 || code === '503') return ERR.queue_full;
   return 'Что-то пошло не так — попробуйте ещё раз';
 }
-
+​
 let toastT = null;
 function toast(msg){
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200);
 }
 function haptic(kind){ try{ tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred(kind||'success'); }catch(e){} }
-
+​
 /* ── theme ── */
 function applyTheme(){
   const dark = tg ? tg.colorScheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   try{ tg && tg.setHeaderColor(dark ? '#101014' : '#f6f6f8'); tg && tg.setBackgroundColor(dark ? '#101014' : '#f6f6f8'); }catch(e){}
 }
-
+​
 /* ── navigation ── */
 function go(p){
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
@@ -448,11 +448,11 @@ function studioTab(s){
   ['img','music','video'].forEach(k => { $('studio-' + k).style.display = k === s ? '' : 'none'; });
   document.querySelectorAll('#studioSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
 }
-
+​
 /* ── sheets ── */
 function openSheet(id){ $('overlay').classList.add('show'); $(id).classList.add('show'); }
 function closeSheets(){ $('overlay').classList.remove('show'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show')); }
-
+​
 /* ── API ── */
 function initData(){ return tg && tg.initData ? tg.initData : ''; }
 async function api(path, opts){
@@ -473,7 +473,7 @@ async function api(path, opts){
     return j;
   } finally { clearTimeout(tmo); }
 }
-
+​
 /* ── demo data (предпросмотр вне Telegram) ── */
 const DEMO_LIMITS = {
   ok: true, first_name: 'Гость', has_sub: false, sub_plan: '', sub_expires: '',
@@ -506,7 +506,7 @@ const DEMO_LIMITS = {
     { key: 'month', name: 'Продвинутый', price: 749, days: 30, credits: 900, daily_credits: 20, description: '' },
   ],
 };
-
+​
 /* ── limits ── */
 let _limFails = 0;
 async function fetchLimits(silent){
@@ -529,14 +529,14 @@ async function fetchLimits(silent){
     else if (!silent) toast(errText(j.error, j.__status));
   }catch(e){ console.error('renderAll failed', e); }
 }
-
+​
 function curModel(){
   const L = S.limits; if (!L || !L.models || !L.models.length) return null;
   let m = L.models.find(x => x.key === S.model);
   if (!m) m = L.models.find(x => !x.premium) || L.models[0];
   return m;
 }
-
+​
 function renderAll(){
   const L = S.limits; if (!L) return;
   // header
@@ -554,7 +554,7 @@ function renderAll(){
   if (m){ S.model = m.key; $('modelBtnName').textContent = m.label; $('attachBtn').style.display = m.vision ? '' : 'none'; }
   renderModelSheet(); renderStudio(); renderPlans(); renderProfile();
 }
-
+​
 /* ── model sheet ── */
 function modelTags(m){
   const t = [];
@@ -588,7 +588,7 @@ function pickModel(key){
     else toast('PRO-модель: без подписки доступна ' + mx + ' проба в день');
   }
 }
-
+​
 /* ── paywall ── */
 function openPaywall(title, text){
   $('paywallTitle').textContent = title || 'Нужна подписка';
@@ -607,7 +607,7 @@ function openBot(){
   try{ if (tg){ tg.openTelegramLink(BOT_LINK); return; } }catch(e){}
   window.open(BOT_LINK, '_blank');
 }
-
+​
 /* ── local chat history ── */
 function loadChats(){
   try{ S.chats = JSON.parse(localStorage.getItem('huza_chats_v2') || '[]'); }catch(e){ S.chats = []; }
@@ -678,7 +678,7 @@ function retryLast(){
   const last = [...(c.messages||[])].reverse().find(m => m.role === 'user');
   if (last){ $('input').value = last.content; sendChat(); }
 }
-
+​
 /* ── chat ── */
 function md(t){
   let h = esc(t);
@@ -722,7 +722,7 @@ function onFile(inp){
   r.readAsDataURL(f);
 }
 function clearAttach(){ S.attach = null; $('attachPreview').style.display = 'none'; $('attachPreview').innerHTML = ''; }
-
+​
 async function sendChat(){
   if (S.busy) return;
   const inp = $('input'), text = inp.value.trim();
@@ -762,7 +762,7 @@ async function sendChat(){
 }
 let limT = null;
 function fetchLimitsSoft(){ clearTimeout(limT); limT = setTimeout(() => fetchLimits(true), 800); }
-
+​
 /* ── studio ── */
 function optRow(boxId, items, curKey, onPick, small){
   const box = $(boxId);
@@ -776,7 +776,7 @@ function pickImgRatio(k){ S.img.ratio = k; renderStudio(); }
 function pickVideoModel(k){ S.video.model = k; renderStudio(); }
 function pickVideoRatio(k){ S.video.ratio = k; renderStudio(); }
 function pickVideoDur(k){ S.video.dur = parseInt(k, 10) || 8; renderStudio(); }
-
+​
 function quotaHtml(kind, freeLeft, freeMax, cost){
   const L = S.limits;
   if (!L.has_sub && !L.is_admin){
@@ -785,7 +785,7 @@ function quotaHtml(kind, freeLeft, freeMax, cost){
   }
   return 'Спишется <b>' + cost + ' ✵</b> · баланс: ' + (L.credits != null ? L.credits : 0) + ' ✵';
 }
-
+​
 function renderStudio(){
   const L = S.limits; if (!L) return;
   // ФОТО
@@ -814,7 +814,7 @@ function renderStudio(){
   if (!(L.service_enabled || {}).video){ vq.innerHTML = '⛔ Генерация видео временно отключена'; vq.classList.add('warn'); $('videoGo').disabled = true; }
   else { vq.innerHTML = quotaHtml('video', L.free_video_left || 0, (L.free_month || {}).video || 1, vm.cost); vq.classList.toggle('warn', !L.has_sub && !L.is_admin && !(L.free_video_left > 0)); $('videoGo').disabled = false; }
 }
-
+​
 function genLock(kind, on){
   $(kind + 'Go').disabled = on;
   $(kind + 'GoTxt').innerHTML = on ? '<span class="spin"></span>&nbsp; Генерация…' : ({ img: 'Создать изображение', music: 'Создать трек', video: 'Создать видео' })[kind];
@@ -840,7 +840,7 @@ function saveB64(name){
   a.href = 'data:' + it.mime + ';base64,' + it.b64; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
 }
-
+​
 async function genImage(){
   const p = $('imgPrompt').value.trim();
   if (!p){ toast('Опишите изображение'); return; }
@@ -857,7 +857,7 @@ async function genImage(){
   }catch(e){ toast('Нет связи с сервером'); }
   genLock('img', false); fetchLimitsSoft();
 }
-
+​
 async function genMusic(){
   const p = $('musicPrompt').value.trim();
   if (!p){ toast('Опишите стиль трека'); return; }
@@ -875,7 +875,7 @@ async function genMusic(){
   }catch(e){ toast('Нет связи с сервером'); }
   genLock('music', false); fetchLimitsSoft();
 }
-
+​
 async function genVideo(){
   const p = $('videoPrompt').value.trim();
   if (!p){ toast('Опишите видео'); return; }
@@ -892,7 +892,7 @@ async function genVideo(){
   }catch(e){ toast('Нет связи с сервером'); }
   genLock('video', false); fetchLimitsSoft();
 }
-
+​
 /* ── plans ── */
 function renderPlans(){
   const L = S.limits, w = $('plansWrap'); if (!L || !w) return;
@@ -923,7 +923,7 @@ function renderPlans(){
   });
   w.innerHTML = h;
 }
-
+​
 /* ── profile ── */
 function lim(t, used, mx){
   const u = used || 0, m = mx || 0, pct = m > 0 ? Math.min(100, Math.round(u / m * 100)) : 0;
@@ -961,7 +961,7 @@ function renderProfile(){
     '<button class="planbtn ghost" style="margin-top:12px" onclick="openBot()">Открыть бота</button></div>';
   w.innerHTML = h;
 }
-
+​
 /* ── init ── */
 const inputEl = $('input');
 inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px'; });
@@ -982,3 +982,4 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && !S
 </script>
 </body>
 </html>
+​
