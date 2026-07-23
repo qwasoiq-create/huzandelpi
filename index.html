@@ -240,8 +240,12 @@ textarea.finput:focus{border-color:color-mix(in srgb,var(--accent) 45%,transpare
 .chatdel svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── toast / banner / skeleton ── */
-#toast{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-90px);background:var(--panel3);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:11px 16px;font-size:13.5px;font-weight:500;z-index:100;transition:transform .22s;max-width:88%;text-align:center}
-#toast.show{transform:translateX(-50%) translateY(0)}
+#toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:var(--color-graphite-veil);color:var(--color-bone-white);border:1px solid var(--color-ash-border);box-shadow:0 10px 30px rgba(0,0,0,0.5);border-radius:14px;padding:10px 18px;font-size:13.5px;font-weight:400;z-index:1000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,transform .22s ease,visibility 0s .22s;max-width:88%;text-align:center}
+#toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);transition:opacity .22s ease,transform .22s ease,visibility 0s 0s}
+.persona-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.persona-chip{padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s}
+.persona-chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.chatrow{touch-action:pan-y}
 .demobanner{margin:0 16px 8px;display:none;align-items:center;gap:9px;background:color-mix(in srgb,var(--warn) 9%,var(--panel));border:1px solid color-mix(in srgb,var(--warn) 25%,transparent);border-radius:13px;padding:10px 13px;font-size:12.5px;font-weight:500}
 .demobanner.show{display:flex}
 .demobanner svg{width:16px;height:16px;flex:0 0 auto;stroke:var(--warn);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -323,7 +327,6 @@ button,a,input,textarea{touch-action:manipulation} button:active{transform:scale
 /* Studio, plans, profile */
 .card{background:var(--panel);border-color:var(--border);border-radius:20px;padding:20px}.seg{border-color:var(--border);background:#121214}.seg button.on{background:var(--panel2)}textarea.finput,input.finput{background:#111113;border-color:var(--border);border-radius:14px}.opt{background:var(--panel2);border-radius:12px}.genbtn,.planbtn{background:var(--text);color:var(--bg)}
 .demobanner{border-color:var(--border);background:rgba(223,161,79,.08)}
-#toast{top:auto;bottom:calc(150px + env(safe-area-inset-bottom));height:auto;min-height:0;transform:translateX(-50%) translateY(90px)}#toast.show{transform:translateX(-50%) translateY(0)}
 @media(max-height:650px){.hero{padding-top:4vh}.hero-mark{width:72px;height:72px}.hero-copy{margin:8px 0 12px}.quickrow .qp{min-height:43px}.mode-chips{padding-bottom:6px}}
 @media(min-width:760px){#app{border-left:1px solid var(--border);border-right:1px solid var(--border)}.composer{left:50%;right:auto;width:820px;max-width:100%;transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
@@ -568,6 +571,7 @@ body{font-family:"Neue Montreal","Inter",-apple-system,BlinkMacSystemFont,"Segoe
 <div class="sbody">
 <div class="actrow" onclick="shareDialog()"><svg viewbox="0 0 24 24"><circle cx="6" cy="12" r="2.5"></circle><circle cx="17.5" cy="5.5" r="2.5"></circle><circle cx="17.5" cy="18.5" r="2.5"></circle><path d="M8.2 10.8l7-4M8.2 13.2l7 4"></path></svg>Поделиться диалогом</div>
 <div class="actrow" onclick="exportPdf()"><svg viewbox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4"></path><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path></svg>Экспорт в PDF</div>
+<div class="actrow" onclick="exportMarkdown()"><svg viewbox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"></path><path d="M15 3v5h5M9 13h6M9 17h6"></path></svg>Экспорт в Markdown</div>
 <div class="actrow danger" onclick="deleteCurrentChat()"><svg viewbox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"></path></svg>Удалить диалог</div>
 </div>
 </div>
@@ -580,6 +584,58 @@ body{font-family:"Neue Montreal","Inter",-apple-system,BlinkMacSystemFont,"Segoe
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 const API_BASE = window.HUZA_API_BASE || ((location.hostname.endsWith('.github.io') || location.protocol === 'file:') ? 'https://bot.huzandelpi.ru' : '');
 const BOT_LINK = 'https://t.me/iihuzandelpiibot';
+
+/* ── Telegram CloudStorage: синхронизация между устройствами ── */
+const CS = (function(){
+  try{
+    if (tg && tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.9'))) return tg.CloudStorage;
+  }catch(e){}
+  return null;
+})();
+function csSet(k, v){ if (!CS) return; try{ CS.setItem(k, String(v == null ? '' : v), function(){}); }catch(e){} }
+function csGet(keys, cb){ if (!CS){ cb(null); return; } try{ CS.getItems(keys, function(err, vals){ cb(err ? null : (vals || null)); }); }catch(e){ cb(null); } }
+let _csT = null;
+function cloudBackup(){
+  if (!CS) return;
+  clearTimeout(_csT);
+  _csT = setTimeout(function(){
+    try{
+      const raw = localStorage.getItem('huza_chats_v2') || '[]';
+      const CH = 3500, n = Math.min(40, Math.ceil(raw.length / CH) || 1);
+      for (let i = 0; i < n; i++) csSet('hz_chats_' + i, raw.slice(i * CH, (i + 1) * CH));
+      csSet('hz_chats_n', n);
+      csSet('hz_custom', localStorage.getItem('huza_custom') || '');
+      csSet('hz_model', localStorage.getItem('huza_model') || '');
+      csSet('hz_web', localStorage.getItem('huza_web') || '');
+    }catch(e){}
+  }, 1200);
+}
+function cloudWipe(){ if (!CS) return; csSet('hz_chats_n', 0); }
+function cloudRestore(done){
+  if (!CS){ done(false); return; }
+  let hasLocal = false;
+  try{ hasLocal = (JSON.parse(localStorage.getItem('huza_chats_v2') || '[]') || []).length > 0; }catch(e){}
+  csGet(['hz_chats_n', 'hz_custom', 'hz_model', 'hz_web'], function(meta){
+    if (!meta){ done(false); return; }
+    try{
+      if (meta.hz_custom && !localStorage.getItem('huza_custom')) localStorage.setItem('huza_custom', meta.hz_custom);
+      if (meta.hz_model && !localStorage.getItem('huza_model')) localStorage.setItem('huza_model', meta.hz_model);
+      if (meta.hz_web && localStorage.getItem('huza_web') == null){ localStorage.setItem('huza_web', meta.hz_web); WEB_ON = meta.hz_web === '1'; syncWebBtn(); }
+    }catch(e){}
+    const n = parseInt(meta.hz_chats_n, 10) || 0;
+    if (!n || hasLocal){ done(false); return; }
+    const keys = []; for (let i = 0; i < n; i++) keys.push('hz_chats_' + i);
+    csGet(keys, function(vals){
+      if (!vals){ done(false); return; }
+      let raw = ''; for (let i = 0; i < n; i++) raw += vals['hz_chats_' + i] || '';
+      try{
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length){ localStorage.setItem('huza_chats_v2', JSON.stringify(arr)); done(true); return; }
+      }catch(e){}
+      done(false);
+    });
+  });
+}
 
 const S = {
   demo: false, limits: null, model: localStorage.getItem('huza_model') || '',
@@ -851,7 +907,7 @@ function renderModelSheet(){
 function pickModel(key){
   const L = S.limits, m = (L.models || []).find(x => x.key === key);
   if (!m) return;
-  S.model = key; localStorage.setItem('huza_model', key);
+  S.model = key; localStorage.setItem('huza_model', key); cloudBackup();
   setModelName(m.label);
   $('attachBtn').style.display = m.vision ? '' : 'none';
   renderModelSheet(); closeSheets(); haptic('success');
@@ -896,7 +952,7 @@ function loadChats(){
   if (lastId && S.chats.some(c => c.id === lastId)) openChat(lastId);
   else { S.currentChatId = null; S.history = []; setLastChatId(null); }
 }
-function saveChats(){ try{ localStorage.setItem('huza_chats_v2', JSON.stringify(S.chats.slice(0,30))); }catch(e){} }
+function saveChats(){ try{ localStorage.setItem('huza_chats_v2', JSON.stringify(S.chats.slice(0,30))); }catch(e){} cloudBackup(); }
 function activeChat(){ return S.chats.find(c => c.id === S.currentChatId) || null; }
 function ensureChat(firstText){
   let c = activeChat(); if (c) return c;
@@ -961,6 +1017,7 @@ function deleteChat(id){
 function clearAllHistory(){
   stopGen();S.chats=[];S.currentChatId=null;S.history=[];S.attach=null;S._menuMsg=null;setLastChatId(null);
   try{localStorage.removeItem('huza_chats_v2');}catch(e){}
+  cloudWipe();
   $('msgs').innerHTML='';$('hero').style.display='';clearAttach();renderHistory();closeSheets();toast('История очищена');haptic('success');
 }
 function confirmClearHistory(){
@@ -1090,11 +1147,8 @@ function syncWebBtn(){
 function toggleWeb(){
   WEB_ON = !WEB_ON;
   localStorage.setItem('huza_web', WEB_ON ? '1' : '0');
+  cloudBackup();
   syncWebBtn();
-$('historyList').addEventListener('click',function(e){const row=e.target.closest('.chatrow');if(!row)return;const id=row.dataset.chatId;if(e.target.closest('[data-action="pin"]')){e.stopPropagation();pinChat(id);}else if(e.target.closest('[data-action="delete"]')){e.stopPropagation();deleteChat(id);}else openChat(id);});
-document.addEventListener('click',function(e){const img=e.target.closest('#msgs img,#imgResult img');if(img)openLightbox(img.currentSrc||img.src);});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeSheets();}});
-
   toast(WEB_ON ? 'Веб-поиск включён — ответы будут с данными из интернета' : 'Веб-поиск выключен');
   haptic('success');
 }
@@ -1128,7 +1182,62 @@ function CUSTOM(){ try{ return localStorage.getItem('huza_custom') || ''; }catch
 let _cpT = null;
 function saveCustomPrompt(v){
   try{ localStorage.setItem('huza_custom', String(v || '').slice(0, 600)); }catch(e){}
+  cloudBackup();
   clearTimeout(_cpT); _cpT = setTimeout(function(){ toast('Инструкции сохранены'); }, 900);
+}
+/* ── готовые роли ассистента ── */
+const PERSONAS = [
+  ['Обычный', ''],
+  ['Кратко', 'Отвечай кратко и по делу, без лишней воды.'],
+  ['Учитель', 'Ты терпеливый учитель: объясняй пошагово, простыми словами и с примерами.'],
+  ['Программист', 'Ты senior-разработчик: давай точные технические ответы с примерами кода и лучшими практиками.'],
+  ['Переводчик', 'Ты профессиональный переводчик: переводи точно, сохраняя стиль, тон и смысл оригинала.'],
+  ['Копирайтер', 'Ты опытный копирайтер: пиши ярко, убедительно и структурированно.']
+];
+function setPersona(i){
+  const p = PERSONAS[i]; if (!p) return;
+  try{ localStorage.setItem('huza_custom', p[1]); }catch(e){}
+  cloudBackup(); renderProfile();
+  toast(p[1] ? 'Роль «' + p[0] + '» включена' : 'Роль сброшена'); haptic('success');
+}
+/* ── реферальная ссылка ── */
+function inviteFriend(){
+  let link = BOT_LINK;
+  try{
+    const L = S.limits || {};
+    if (L.ref_link) link = String(L.ref_link);
+    else{
+      const uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+      if (uid) link = BOT_LINK + '?start=ref_' + uid;
+    }
+  }catch(e){}
+  const text = 'Попробуй ХУЗА AI — нейросети прямо в Telegram!';
+  try{
+    if (tg && tg.openTelegramLink){
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(text));
+      haptic('success'); return;
+    }
+  }catch(e){}
+  if (navigator.share){ navigator.share({ url: link, text: text }).catch(function(){}); return; }
+  copyAnswer(link);
+}
+/* ── экспорт в Markdown ── */
+function exportMarkdown(){
+  closeSheets();
+  const c = activeChat();
+  if (!c || !(c.messages || []).length){ toast('Диалог пуст — нечего экспортировать'); return; }
+  const txt = '# ' + c.title + '\n\n' + c.messages.map(function(m){
+    return (m.role === 'user' ? '**Вы:**' : '**ХУЗА AI' + (m.label ? ' (' + m.label + ')' : '') + ':**') + '\n\n' + m.content;
+  }).join('\n\n---\n\n') + '\n';
+  try{
+    const blob = new Blob([txt], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'huza-chat.md';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+    toast('Markdown сохранён');
+  }catch(e){ toast('Не удалось сохранить файл'); }
 }
 const FUPS = [['Подробнее', 'Расскажи подробнее'], ['Проще', 'Объясни проще'], ['Пример', 'Приведи пример']];
 function fupsHtml(){ return '<div class="fups">' + FUPS.map(p => '<button class="fup" onclick="quickAsk(\'' + p[1] + '\')">' + p[0] + '</button>').join('') + '</div>'; }
@@ -1433,7 +1542,7 @@ function genFail(j, what){
   const code = j.error, st = j.__status;
   const L = S.limits || {};
   if (code === 'premium_required') openPaywall('Нужна подписка', 'Бесплатная квота (' + what + ') на этот месяц исчерпана. С подпиской генерации доступны за хузапоинты.');
-  else if (code === 'no_credits') openPaywall('Не хватает хузапоинтов', 'На балансе недостаточно хузапоинтов. Пополните баланс или продлите подписку в б��те.');
+  else if (code === 'no_credits') openPaywall('Не хватает хузапоинтов', 'На балансе недостаточно хузапоинтов. Пополните баланс или продлите подписку в боте.');
   else if (code === 'limit_exceeded') openPaywall('Лимит исчерпан', 'Бесплатная квота (' + what + ') закончилась. Оформите подписку, чтобы создавать больше.');
   else if (st === 403 && !L.has_sub) openPaywall('Нужна подписка', 'Бесплатная квота (' + what + ') исчерпана или требуется подписка.');
   else toast(errText(code, st));
@@ -1569,8 +1678,12 @@ function renderProfile(){
       '<button class="planbtn" style="margin-top:12px" onclick="go(\'plans\')">Смотреть тарифы</button></div>';
   }
   h += '<div class="card"><h3>Персональные инструкции</h3>' +
-    '<div class="sub">Ассистент будет учитывать это в каждом ответе — например: «отвечай кратко», «я школьник, объясняй просто»</div>' +
+    '<div class="sub">Выберите готовую роль или напишите свою — ассистент будет учитывать это в каждом ответе</div>' +
+    '<div class="persona-row">' + PERSONAS.map(function(p, i){ return '<button class="persona-chip' + (CUSTOM().trim() === p[1] ? ' on' : '') + '" onclick="setPersona(' + i + ')">' + esc(p[0]) + '</button>'; }).join('') + '</div>' +
     '<textarea id="customPrompt" class="custombox" rows="3" placeholder="Напишите, как вам отвечать…" oninput="saveCustomPrompt(this.value)">' + esc(CUSTOM()) + '</textarea></div>';
+  h += '<div class="card"><h3>Пригласить друга</h3>' +
+    '<div class="sub">Поделитесь ботом с друзьями' + (L.referrals ? ' — вы уже пригласили: ' + L.referrals : '') + '</div>' +
+    '<button class="planbtn ghost" style="margin-top:12px" onclick="inviteFriend()">Поделиться ссылкой</button></div>';
   h += '<div class="card"><h3>Ежедневный бонус</h3>' +
     '<div class="sub">Каждый день в боте можно забрать бесплатные хузапоинты</div>' +
     '<button class="planbtn ghost" style="margin-top:12px" onclick="openBot()">Открыть бота</button></div>';
@@ -1579,6 +1692,61 @@ function renderProfile(){
 
 /* ── init ── */
 syncWebBtn();
+let _histSwipeAt = 0;
+$('historyList').addEventListener('click', function(e){
+  if (Date.now() - _histSwipeAt < 400) return;
+  const row = e.target.closest('.chatrow');
+  if (!row) return;
+  const id = row.dataset.chatId;
+  if (e.target.closest('[data-action="pin"]')){
+    e.stopPropagation();
+    pinChat(id);
+  } else if (e.target.closest('[data-action="delete"]')){
+    e.stopPropagation();
+    deleteChat(id);
+  } else {
+    openChat(id);
+  }
+});
+/* свайпы по чатам в истории: влево — удалить, вправо — закрепить */
+(function(){
+  const list = $('historyList');
+  let sx = 0, sy = 0, row = null, dx = 0, swiping = false;
+  list.addEventListener('touchstart', function(e){
+    const t = e.touches[0]; if (!t) return;
+    row = e.target.closest('.chatrow');
+    if (!row) return;
+    sx = t.clientX; sy = t.clientY; dx = 0; swiping = false;
+  }, { passive: true });
+  list.addEventListener('touchmove', function(e){
+    if (!row) return;
+    const t = e.touches[0]; if (!t) return;
+    dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    if (!swiping && Math.abs(dx) > 16 && Math.abs(dx) > Math.abs(dy) * 1.4) swiping = true;
+    if (swiping){ row.style.transition = 'none'; row.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx)) + 'px)'; }
+  }, { passive: true });
+  function endSwipe(){
+    if (!row) return;
+    const r = row, d = dx, sw = swiping;
+    row = null; dx = 0; swiping = false;
+    r.style.transition = 'transform .18s ease'; r.style.transform = '';
+    if (!sw) return;
+    _histSwipeAt = Date.now();
+    const id = r.dataset.chatId;
+    if (d <= -64){ deleteChat(id); haptic('success'); }
+    else if (d >= 64) pinChat(id);
+  }
+  list.addEventListener('touchend', endSwipe, { passive: true });
+  list.addEventListener('touchcancel', endSwipe, { passive: true });
+})();
+document.addEventListener('click', function(e){
+  const img = e.target.closest('#msgs img,#imgResult img');
+  if (img) openLightbox(img.currentSrc || img.src);
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){ closeLightbox(); closeSheets(); }
+});
 let _lpT = null;
 $('msgs').addEventListener('touchstart', function(e){
   const b = e.target.closest('.msg.bot');
@@ -1602,11 +1770,15 @@ if (tg){
   tg.ready(); tg.expand();
   try{ tg.onEvent('themeChanged', applyTheme); }catch(e){}
   try{ tg.disableVerticalSwipes && tg.disableVerticalSwipes(); }catch(e){}
+  try{ if (tg.SettingsButton && tg.SettingsButton.show){ tg.SettingsButton.show(); tg.SettingsButton.onClick(function(){ go('profile'); closeSheets(); }); } }catch(e){}
 }
 prepareTelegram();
 applyTheme();
 loadChats();
 renderHistory();
+cloudRestore(function(restored){
+  if (restored){ loadChats(); renderHistory(); toast('История восстановлена из облака'); }
+});
 fetchLimits();
 // Фоновое обновление лимитов — тихо, без тостов об ошибках
 setInterval(() => { if (!S.busy && !document.hidden) fetchLimits(true); }, 90000);
